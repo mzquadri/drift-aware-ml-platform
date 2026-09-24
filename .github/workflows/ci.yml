@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: lint and tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install
+        run: pip install -e ".[dev]"
+
+      - name: Lint
+        run: ruff check src tests
+
+      - name: Format check
+        run: ruff format --check src tests
+
+      # The suite reaches no network, no registry and no trained model, so it
+      # runs the same here as it does on a laptop.
+      - name: Tests
+        run: pytest --cov --cov-report=term-missing
+
+  image:
+    name: container builds and starts
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: quality
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          push: false
+          load: true
+          tags: drift-aware-ml-platform:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Building is not the same as starting. This catches a missing runtime
+      # dependency, which a build-only job would happily let through.
+      - name: Start and check liveness
+        run: |
+          docker run -d --name svc -p 8000:8000 drift-aware-ml-platform:ci
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:8000/health >/dev/null 2>&1; then
+              echo "service answered on attempt $i"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "service never became live"
+          docker logs svc
+          exit 1
+
+      - name: Readiness reports no model, and says so honestly
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/ready)
+          test "$code" = "503" || { echo "expected 503 without a registry, got $code"; exit 1; }
+
+      - name: Container logs on failure
+        if: failure()
+        run: docker logs svc || true

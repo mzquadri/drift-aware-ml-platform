@@ -1,0 +1,26 @@
+# data and model artefacts are reproducible, so they stay out of the repository
+data/
+artifacts/
+mlruns/
+mlflow.db
+
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# terraform state can contain resource detail, never commit it
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+
+.env
+.DS_Store

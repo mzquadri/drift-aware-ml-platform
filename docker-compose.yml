@@ -1,0 +1,121 @@
+# The whole platform on one machine. Nothing here needs a cloud account, which
+# is the point: the cloud path in infra/terraform is a deployment target, not a
+# prerequisite for running or reviewing the project.
+
+name: drift-aware-ml-platform
+
+x-common-env: &common-env
+  MLFLOW_TRACKING_URI: http://mlflow:5000
+  MODEL_NAME: bike-demand
+  MODEL_STAGE: Production
+  PREDICTION_LOG: /app/artifacts/predictions.parquet
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: platform
+      POSTGRES_PASSWORD: platform
+      POSTGRES_DB: platform
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U platform"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.16.2
+    command: >
+      mlflow server
+      --host 0.0.0.0 --port 5000
+      --backend-store-uri postgresql://platform:platform@postgres/platform
+      --artifacts-destination /mlruns
+      --serve-artifacts
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlflow-artifacts:/mlruns
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:5000/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+  service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    environment:
+      <<: *common-env
+    depends_on:
+      mlflow:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - artifacts:/app/artifacts
+
+  # Airflow in standalone mode: one container, scheduler and webserver together.
+  # Fine for a single-machine demo, and honest about being that rather than
+  # pretending to be a production deployment.
+  airflow:
+    image: apache/airflow:2.10.2-python3.11
+    command: bash -c "pip install --user -e /opt/airflow/project && airflow standalone"
+    environment:
+      <<: *common-env
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://platform:platform@postgres/airflow
+      SERVICE_URL: http://service:8000
+      _AIRFLOW_WWW_USER_USERNAME: admin
+      _AIRFLOW_WWW_USER_PASSWORD: admin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - .:/opt/airflow/project
+      - artifacts:/opt/airflow/artifacts
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=7d
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    depends_on:
+      - service
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+    volumes:
+      - ./monitoring/grafana:/etc/grafana/provisioning
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+
+volumes:
+  postgres-data:
+  mlflow-artifacts:
+  prometheus-data:
+  grafana-data:
+  artifacts:

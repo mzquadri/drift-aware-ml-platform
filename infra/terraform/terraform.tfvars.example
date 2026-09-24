@@ -1,0 +1,6 @@
+# Copy to terraform.tfvars and fill in. That file is gitignored.
+project_id          = "your-gcp-project"
+region              = "europe-west3"
+image               = "europe-west3-docker.pkg.dev/your-gcp-project/drift-aware-ml-platform/service:latest"
+mlflow_tracking_uri = "https://your-mlflow-host"
+allow_public        = false

@@ -1,0 +1,14 @@
+# Scrapes the prediction service only. Adding MLflow or Airflow here is possible
+# but they expose operational metrics, not model behaviour, which is what this
+# stack is for.
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: demand-service
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["service:8000"]
+        labels:
+          service: demand
