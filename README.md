@@ -1,5 +1,7 @@
 # drift-aware-ml-platform
 
+[![CI](https://github.com/mzquadri/drift-aware-ml-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/mzquadri/drift-aware-ml-platform/actions/workflows/ci.yml)
+
 An hourly demand-forecasting service that notices when its own model has gone
 stale, and retrains itself when it has.
 
