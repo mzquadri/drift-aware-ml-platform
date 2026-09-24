@@ -16,8 +16,13 @@ dependencies = [
     "uvicorn[standard]>=0.30",
     "pydantic>=2.8",
     "prometheus-client>=0.20",
-    "mlflow>=2.16",
-    "evidently>=0.4.40,<0.5",
+    # MLflow 3 for registry aliases and the log_model(name=...) form. Stages,
+    # which 2.x used, are deprecated and the alias is the supported route.
+    "mlflow>=3.0",
+    # Evidently 0.7 reshaped the API: Report/Dataset/DataDefinition, and drift
+    # scores became distances rather than p-values. 0.4.x also fails to build on
+    # Python 3.13, so pinning back is not an option.
+    "evidently>=0.7,<0.8",
 ]
 
 [project.optional-dependencies]

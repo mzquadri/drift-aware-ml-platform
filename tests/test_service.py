@@ -45,6 +45,11 @@ def client(tmp_path, monkeypatch):
         service=replace(service.CONFIG.service, prediction_log=tmp_path / "pred.parquet"),
     )
     monkeypatch.setattr(service, "CONFIG", cfg)
+    # Startup would otherwise spawn a thread that tries to reach a registry.
+    # These tests are about the service, not about MLflow.
+    monkeypatch.setattr(service, "_load_model_in_background", lambda: None)
+    service.STATE.model = None
+    service.STATE.version = "unloaded"
     with TestClient(service.app) as c:
         yield c
 

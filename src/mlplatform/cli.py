@@ -48,17 +48,30 @@ def cmd_train(args: argparse.Namespace) -> int:
     return 0 if run.decision.promote or run.decision.champion_mae is not None else 1
 
 
+def _monitored(frame, cfg=CONFIG):
+    """Features plus the target, because the target is where the movement is.
+
+    Passing only the features here was a real bug: the monitor reported "target
+    not observed" and sat quiet through a 63% rise in demand.
+    """
+    from .features import feature_frame
+
+    out = feature_frame(frame, cfg)
+    if cfg.data.target in frame.columns:
+        out[cfg.data.target] = frame[cfg.data.target].to_numpy()
+    return out
+
+
 def cmd_monitor(args: argparse.Namespace) -> int:
     """Compare the serving window against the training window and decide."""
     from .data import period_frames
     from .drift import decide_retrain, measure, write_decision, write_report
-    from .features import feature_frame
 
     periods = period_frames(CONFIG.data)
-    reference = feature_frame(periods.reference, CONFIG)
+    reference = _monitored(periods.reference)
 
     if args.source == "periods":
-        current = feature_frame(periods.current, CONFIG)
+        current = _monitored(periods.current)
     else:
         import pandas as pd
 
@@ -66,7 +79,13 @@ def cmd_monitor(args: argparse.Namespace) -> int:
         if not path.exists():
             log.error("no prediction log at %s; serve some traffic first", path)
             return 2
-        current = feature_frame(pd.read_parquet(path), CONFIG)
+        logged = pd.read_parquet(path)
+        # Live traffic has no labels yet, so compare what the model predicted
+        # against what it was trained to predict. Prediction drift is the
+        # standard stand-in while the true values are still arriving.
+        if "prediction" in logged.columns:
+            logged = logged.rename(columns={"prediction": CONFIG.data.target})
+        current = _monitored(logged)
 
     result = measure(reference, current, CONFIG)
     decision = decide_retrain(result, CONFIG)

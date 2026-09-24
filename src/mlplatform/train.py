@@ -166,7 +166,7 @@ def run_training(frame: pd.DataFrame | None = None, cfg: Config | None = None) -
 
     scores = score(pipeline, valid, cfg)
     base = baseline_mae(train, valid, cfg)
-    champion = _champion_mae(cfg)
+    champion = _champion_mae_on(valid, cfg)
     decision = decide(scores, base, champion, cfg)
 
     log.info("validation %s", scores.as_dict())
@@ -176,20 +176,34 @@ def run_training(frame: pd.DataFrame | None = None, cfg: Config | None = None) -
     )
 
 
-def _champion_mae(cfg: Config) -> float | None:
-    """Read the current champion's validation MAE from the registry, if there is one.
+def _champion_mae_on(valid: pd.DataFrame, cfg: Config) -> float | None:
+    """Score the live champion on the challenger's own validation window.
 
-    Kept isolated so the training logic can be tested without a registry running.
+    Reading the champion's stored MAE instead would compare two numbers measured
+    on different data, and on this dataset that is not a technicality. Mean
+    demand rises 63% from 2011 to 2012, so the same model scores roughly twice
+    the MAE on the later window. Judged that way a retrained model looks far
+    worse than the champion it should replace, and the gate blocks the very
+    promotion drift was supposed to trigger.
+
+    Falls back to the stored metric only when the champion cannot be loaded, and
+    says so, because a same-window comparison is the one worth trusting.
     """
     try:
-        from .registry import champion_metrics
+        from .registry import champion_metrics, load_champion
     except ImportError:  # pragma: no cover - registry is optional locally
         return None
-    metrics = champion_metrics(cfg)
-    if not metrics:
-        return None
-    value = metrics.get("valid_mae")
-    return float(value) if value is not None else None
+
+    try:
+        champion = load_champion(cfg)
+    except Exception as exc:
+        log.info("champion not loadable (%s), falling back to its stored metric", exc)
+        stored = champion_metrics(cfg).get("valid_mae")
+        return float(stored) if stored is not None else None
+
+    scored = score(champion, valid, cfg)
+    log.info("champion re-scored on this window: MAE %.2f", scored.mae)
+    return scored.mae
 
 
 def write_run_summary(run: TrainingRun, path: Path) -> Path:

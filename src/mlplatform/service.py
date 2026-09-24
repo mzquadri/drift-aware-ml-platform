@@ -13,6 +13,7 @@ Three things it does that a bare `@app.post("/predict")` does not:
 from __future__ import annotations
 
 import logging
+import threading
 import time
 from contextlib import asynccontextmanager
 from typing import Any
@@ -84,11 +85,13 @@ STATE = _State()
 
 
 def _load_model() -> None:
-    from .registry import load_champion
+    from .registry import champion_version, load_champion
 
     try:
         STATE.model = load_champion(CONFIG)
-        STATE.version = CONFIG.service.model_stage
+        # The registry version, not the alias. Reporting "champion" back would
+        # tell a caller nothing about which model actually answered them.
+        STATE.version = champion_version(CONFIG)
         MODEL_READY.set(1)
         MODEL_VERSION.labels(version=STATE.version).set(1)
         log.info("champion model loaded from the registry")
@@ -98,9 +101,20 @@ def _load_model() -> None:
         log.error("no champion model available: %s", exc)
 
 
+def _load_model_in_background() -> None:
+    """Load off the startup path.
+
+    Loading inline meant a slow or unreachable registry held startup open, so
+    the process was neither live nor able to say why. Loading in a thread makes
+    the service live immediately and simply not ready until the model arrives,
+    which is the distinction /health and /ready exist to express.
+    """
+    threading.Thread(target=_load_model, name="model-loader", daemon=True).start()
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    _load_model()
+    _load_model_in_background()
     yield
 
 
