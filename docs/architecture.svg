@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 540" width="1080" height="540" font-family="Segoe UI, -apple-system, Helvetica, Arial, sans-serif">
+  <defs><style>
+    .h { fill:#111827; font-size:19px; font-weight:600; }
+    .s { fill:#6B7280; font-size:12.5px; }
+    .lbl { fill:#111827; font-size:13.5px; font-weight:600; }
+    .sub { fill:#6B7280; font-size:11px; }
+    .cap { fill:#9CA3AF; font-size:11.5px; }
+    .lane { fill:#9CA3AF; font-size:11.5px; font-style:italic; }
+  </style></defs>
+  <text class="h" x="30" y="36">Train, promote, monitor, serve</text>
+  <text class="s" x="30" y="58">A challenger ships only if it measurably beats both the training mean and the current champion. Drift decides when to try.</text>
+  <text class="lane" x="30" y="96">Training &amp; promotion — scheduled</text>
+  <rect x="30" y="108" width="170" height="74" rx="9" fill="#F9FAFB" stroke="#E5E7EB" stroke-width="1.4"/>
+  <text class="lbl" x="115.0" y="133" text-anchor="middle">UCI hourly data</text>
+  <text class="sub" x="115.0" y="152" text-anchor="middle">SHA-256 pinned</text>
+  <line x1="204" y1="145" x2="229.0" y2="145.0" stroke="#6B7280" stroke-width="1.6"/>
+  <polygon points="236,145 229.0,149.4 229.0,140.6" fill="#6B7280"/>
+  <rect x="240" y="108" width="170" height="74" rx="9" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.4"/>
+  <text class="lbl" x="325.0" y="133" text-anchor="middle">Train</text>
+  <text class="sub" x="325.0" y="152" text-anchor="middle">two gates</text>
+  <line x1="414" y1="145" x2="439.0" y2="145.0" stroke="#6B7280" stroke-width="1.6"/>
+  <polygon points="446,145 439.0,149.4 439.0,140.6" fill="#6B7280"/>
+  <rect x="450" y="108" width="170" height="74" rx="9" fill="#ECFDF5" stroke="#059669" stroke-width="1.4"/>
+  <text class="lbl" x="535.0" y="133" text-anchor="middle">MLflow registry</text>
+  <text class="sub" x="535.0" y="152" text-anchor="middle">every challenger logged</text>
+  <line x1="624" y1="145" x2="669.0" y2="145.0" stroke="#6B7280" stroke-width="1.6"/>
+  <polygon points="676,145 669.0,149.4 669.0,140.6" fill="#6B7280"/>
+  <text class="cap" x="650.0" y="138.0" text-anchor="middle">if better</text>
+  <rect x="680" y="108" width="160" height="74" rx="9" fill="#FFFBEB" stroke="#D97706" stroke-width="1.4"/>
+  <text class="lbl" x="760.0" y="133" text-anchor="middle">@champion</text>
+  <text class="sub" x="760.0" y="152" text-anchor="middle">the live pointer</text>
+  <text class="lane" x="30" y="232">Monitoring — after each window</text>
+  <rect x="240" y="244" width="220" height="70" rx="9" fill="#FFFBEB" stroke="#D97706" stroke-width="1.4"/>
+  <text class="lbl" x="350.0" y="269" text-anchor="middle">Drift check</text>
+  <text class="sub" x="350.0" y="288" text-anchor="middle">target vs. feature drift</text>
+  <line x1="327" y1="244" x2="327.0" y2="192.0" stroke="#6B7280" stroke-width="1.6"/>
+  <polygon points="327,185 331.4,192.0 322.6,192.0" fill="#6B7280"/>
+  <text class="cap" x="327.0" y="207.5" text-anchor="middle">retrain</text>
+  <text class="lane" x="30" y="356">Serving — online, per request</text>
+  <rect x="30" y="368" width="140" height="74" rx="9" fill="#F9FAFB" stroke="#E5E7EB" stroke-width="1.4"/>
+  <text class="lbl" x="100.0" y="403.0" text-anchor="middle">Request</text>
+  <line x1="174" y1="405" x2="199.0" y2="405.0" stroke="#6B7280" stroke-width="1.6"/>
+  <polygon points="206,405 199.0,409.4 199.0,400.6" fill="#6B7280"/>
+  <rect x="210" y="368" width="180" height="74" rx="9" fill="#EFF6FF" stroke="#2563EB" stroke-width="1.4"/>
+  <text class="lbl" x="300.0" y="393" text-anchor="middle">FastAPI service</text>
+  <text class="sub" x="300.0" y="412" text-anchor="middle">live before ready</text>
+  <line x1="394" y1="405" x2="419.0" y2="405.0" stroke="#6B7280" stroke-width="1.6"/>
+  <polygon points="426,405 419.0,409.4 419.0,400.6" fill="#6B7280"/>
+  <rect x="430" y="368" width="150" height="74" rx="9" fill="#F9FAFB" stroke="#E5E7EB" stroke-width="1.4"/>
+  <text class="lbl" x="505.0" y="393" text-anchor="middle">Prediction</text>
+  <text class="sub" x="505.0" y="412" text-anchor="middle">~2ms warm</text>
+  <line x1="584" y1="405" x2="609.0" y2="405.0" stroke="#6B7280" stroke-width="1.6"/>
+  <polygon points="616,405 609.0,409.4 609.0,400.6" fill="#6B7280"/>
+  <rect x="620" y="368" width="150" height="74" rx="9" fill="#F9FAFB" stroke="#E5E7EB" stroke-width="1.4"/>
+  <text class="lbl" x="695.0" y="403.0" text-anchor="middle">Prometheus</text>
+  <line x1="774" y1="405" x2="799.0" y2="405.0" stroke="#6B7280" stroke-width="1.6"/>
+  <polygon points="806,405 799.0,409.4 799.0,400.6" fill="#6B7280"/>
+  <rect x="810" y="368" width="150" height="74" rx="9" fill="#F9FAFB" stroke="#E5E7EB" stroke-width="1.4"/>
+  <text class="lbl" x="885.0" y="403.0" text-anchor="middle">Grafana</text>
+  <line x1="730" y1="182" x2="376.2" y2="364.8" stroke="#9CA3AF" stroke-width="1.6" stroke-dasharray="4 3"/>
+  <polygon points="370,368 374.2,360.9 378.2,368.7" fill="#9CA3AF"/>
+  <text class="cap" x="560" y="268" text-anchor="middle">loads @champion</text>
+  <line x1="505" y1="368" x2="366.6" y2="316.4" stroke="#9CA3AF" stroke-width="1.6" stroke-dasharray="4 3"/>
+  <polygon points="360,314 368.1,312.3 365.0,320.6" fill="#9CA3AF"/>
+  <text class="cap" x="500" y="344" text-anchor="middle">serving traffic log</text>
+  <line x1="30" y1="462" x2="1050" y2="462" stroke="#E5E7EB" stroke-width="1"/>
+  <text class="lbl" x="30" y="488">Two gates decide whether a model ships</text>
+  <text class="cap" x="30" y="510">A challenger must beat the training-mean baseline by 35%, which catches a broken dataset or a model that learned nothing.</text>
+  <text class="cap" x="30" y="529">Then it must beat the current champion, re-scored on the challenger's own validation window, by 2% — comparing stored metrics across windows of different difficulty is meaningless.</text>
+</svg>

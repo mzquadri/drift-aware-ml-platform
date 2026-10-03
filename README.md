@@ -24,20 +24,11 @@ Every number below came from running it, not from a design document.
 | 4. Retrain including 2012 | Champion re-scored on the new window: MAE **116.57**. Challenger: **95.48**, 18% better. Promoted, version 4. |
 | 5. Service reloads | `/ready` reports `model_version: 4`, `/predict` answers in ~2 ms warm |
 
-```
-                       ┌──────────────┐
-  UCI hourly data ───► │ train (gate) │ ──► MLflow registry ──► @champion
-                       └──────────────┘            ▲
-                              ▲                    │ alias moves only if better
-                              │ retrain            │
-                       ┌──────────────┐            │
-                       │ drift check  │ ◄── serving traffic log
-                       └──────────────┘            ▲
-                                                   │
-  request ──► FastAPI service ──► prediction ──────┘
-                    │
-                    └──► Prometheus ──► Grafana
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/architecture-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="docs/architecture.svg">
+  <img src="docs/architecture.svg" alt="Train, promote, monitor, serve: the training and promotion loop, the drift-triggered retrain, and the serving loop feeding it traffic">
+</picture>
 
 ## Two things that were wrong, and how they showed up
 
@@ -130,6 +121,12 @@ docker compose up --build
 | Airflow | http://localhost:8080 |
 | Prometheus | http://localhost:9090 |
 | Grafana | http://localhost:3000 |
+
+The architecture diagram above is generated, not drawn by hand:
+
+```bash
+python scripts/figures/generate_diagram.py   # docs/architecture.svg
+```
 
 ## Notes on the stack
 
