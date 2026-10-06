@@ -1,0 +1,388 @@
+{
+  "generated_utc": "2026-10-06T19:37:38Z",
+  "environment": {
+    "python": "3.13.5",
+    "river": "0.26.1",
+    "data_sha256": "e03de4ee4ef4dc376ac6e04bf829673c6269e8eba5c60fa121640fa2f829504f"
+  },
+  "setup": {
+    "champion_trained_on_rows": 6916,
+    "control_rows": 1729,
+    "control_mae": 51.49,
+    "current_rows": 8734,
+    "current_mae": 102.45,
+    "note": "Control is the held-out slice of 2011, the regime the champion was trained on. An alarm there is a false alarm."
+  },
+  "error_stream_at_defaults": {
+    "PageHinkley": {
+      "control": {
+        "first": 29,
+        "count": 57,
+        "length": 1729
+      },
+      "current": {
+        "first": 29,
+        "count": 291,
+        "length": 8734
+      }
+    },
+    "ADWIN": {
+      "control": {
+        "first": 383,
+        "count": 2,
+        "length": 1729
+      },
+      "current": {
+        "first": 159,
+        "count": 8,
+        "length": 8734
+      }
+    },
+    "KSWIN": {
+      "control": {
+        "first": 195,
+        "count": 5,
+        "length": 1729
+      },
+      "current": {
+        "first": 303,
+        "count": 27,
+        "length": 8734
+      }
+    }
+  },
+  "adwin_sweep": [
+    {
+      "delta": 0.002,
+      "control": {
+        "first": 383,
+        "count": 2,
+        "length": 1729
+      },
+      "current": {
+        "first": 159,
+        "count": 8,
+        "length": 8734
+      }
+    },
+    {
+      "delta": 0.001,
+      "control": {
+        "first": 383,
+        "count": 2,
+        "length": 1729
+      },
+      "current": {
+        "first": 159,
+        "count": 8,
+        "length": 8734
+      }
+    },
+    {
+      "delta": 0.0001,
+      "control": {
+        "first": 1663,
+        "count": 1,
+        "length": 1729
+      },
+      "current": {
+        "first": 159,
+        "count": 6,
+        "length": 8734
+      }
+    },
+    {
+      "delta": 1e-05,
+      "control": {
+        "first": null,
+        "count": 0,
+        "length": 1729
+      },
+      "current": {
+        "first": 1855,
+        "count": 4,
+        "length": 8734
+      }
+    },
+    {
+      "delta": 1e-06,
+      "control": {
+        "first": null,
+        "count": 0,
+        "length": 1729
+      },
+      "current": {
+        "first": 1855,
+        "count": 3,
+        "length": 8734
+      }
+    },
+    {
+      "delta": 1e-07,
+      "control": {
+        "first": null,
+        "count": 0,
+        "length": 1729
+      },
+      "current": {
+        "first": 1855,
+        "count": 3,
+        "length": 8734
+      }
+    },
+    {
+      "delta": 1e-08,
+      "control": {
+        "first": null,
+        "count": 0,
+        "length": 1729
+      },
+      "current": {
+        "first": 1855,
+        "count": 3,
+        "length": 8734
+      }
+    },
+    {
+      "delta": 1e-10,
+      "control": {
+        "first": null,
+        "count": 0,
+        "length": 1729
+      },
+      "current": {
+        "first": 1855,
+        "count": 3,
+        "length": 8734
+      }
+    }
+  ],
+  "adwin_calibrated": {
+    "delta": 1e-05,
+    "chosen_by": "most sensitive delta raising no alarm on the control",
+    "current": {
+      "first": 1855,
+      "count": 4,
+      "length": 8734
+    }
+  },
+  "window_monitor": [
+    {
+      "rows": 168,
+      "days": 7.0,
+      "months_present": [
+        1
+      ],
+      "target_drift": 0.1521,
+      "feature_drift_share": 0.7273,
+      "drifted_columns": [
+        "temp",
+        "atemp",
+        "hum",
+        "windspeed",
+        "season",
+        "mnth",
+        "holiday",
+        "weathersit"
+      ],
+      "retrain": false,
+      "reason": "serving window has 168 rows, below the 500 needed for the test to mean anything"
+    },
+    {
+      "rows": 336,
+      "days": 14.0,
+      "months_present": [
+        1
+      ],
+      "target_drift": 0.1437,
+      "feature_drift_share": 0.5455,
+      "drifted_columns": [
+        "temp",
+        "atemp",
+        "hum",
+        "windspeed",
+        "season",
+        "mnth"
+      ],
+      "retrain": false,
+      "reason": "serving window has 336 rows, below the 500 needed for the test to mean anything"
+    },
+    {
+      "rows": 500,
+      "days": 20.8,
+      "months_present": [
+        1
+      ],
+      "target_drift": 0.1693,
+      "feature_drift_share": 0.6364,
+      "drifted_columns": [
+        "temp",
+        "atemp",
+        "hum",
+        "windspeed",
+        "season",
+        "mnth",
+        "holiday"
+      ],
+      "retrain": true,
+      "reason": "64% of features drifted (temp, atemp, hum, windspeed, season, mnth, holiday), at or over the 30% threshold"
+    },
+    {
+      "rows": 720,
+      "days": 30.0,
+      "months_present": [
+        1
+      ],
+      "target_drift": 0.1221,
+      "feature_drift_share": 0.5455,
+      "drifted_columns": [
+        "temp",
+        "atemp",
+        "hum",
+        "windspeed",
+        "season",
+        "mnth"
+      ],
+      "retrain": true,
+      "reason": "55% of features drifted (temp, atemp, hum, windspeed, season, mnth), at or over the 30% threshold"
+    },
+    {
+      "rows": 1000,
+      "days": 41.7,
+      "months_present": [
+        1,
+        2
+      ],
+      "target_drift": 0.0769,
+      "feature_drift_share": 0.5455,
+      "drifted_columns": [
+        "temp",
+        "atemp",
+        "hum",
+        "windspeed",
+        "season",
+        "mnth"
+      ],
+      "retrain": true,
+      "reason": "55% of features drifted (temp, atemp, hum, windspeed, season, mnth), at or over the 30% threshold"
+    },
+    {
+      "rows": 1500,
+      "days": 62.5,
+      "months_present": [
+        1,
+        2,
+        3
+      ],
+      "target_drift": 0.0436,
+      "feature_drift_share": 0.5455,
+      "drifted_columns": [
+        "temp",
+        "atemp",
+        "hum",
+        "windspeed",
+        "season",
+        "mnth"
+      ],
+      "retrain": true,
+      "reason": "55% of features drifted (temp, atemp, hum, windspeed, season, mnth), at or over the 30% threshold"
+    },
+    {
+      "rows": 1855,
+      "days": 77.3,
+      "months_present": [
+        1,
+        2,
+        3
+      ],
+      "target_drift": 0.0778,
+      "feature_drift_share": 0.5455,
+      "drifted_columns": [
+        "temp",
+        "atemp",
+        "hum",
+        "windspeed",
+        "season",
+        "mnth"
+      ],
+      "retrain": true,
+      "reason": "55% of features drifted (temp, atemp, hum, windspeed, season, mnth), at or over the 30% threshold"
+    },
+    {
+      "rows": 2500,
+      "days": 104.2,
+      "months_present": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "target_drift": 0.2601,
+      "feature_drift_share": 0.5455,
+      "drifted_columns": [
+        "temp",
+        "atemp",
+        "hum",
+        "windspeed",
+        "season",
+        "mnth"
+      ],
+      "retrain": true,
+      "reason": "target 'cnt' drifted 0.260 by Wasserstein distance (normed), over the 0.2 threshold, while only 55% of features moved; the relationship the model learned no longer holds"
+    },
+    {
+      "rows": 4000,
+      "days": 166.7,
+      "months_present": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "target_drift": 0.4938,
+      "feature_drift_share": 0.5455,
+      "drifted_columns": [
+        "temp",
+        "atemp",
+        "hum",
+        "windspeed",
+        "season",
+        "mnth"
+      ],
+      "retrain": true,
+      "reason": "target 'cnt' drifted 0.494 by Wasserstein distance (normed), over the 0.2 threshold, while only 55% of features moved; the relationship the model learned no longer holds"
+    },
+    {
+      "rows": 8734,
+      "days": 363.9,
+      "months_present": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "target_drift": 0.6792,
+      "feature_drift_share": 0.0909,
+      "drifted_columns": [
+        "hum"
+      ],
+      "retrain": true,
+      "reason": "target 'cnt' drifted 0.679 by Wasserstein distance (normed), over the 0.2 threshold, while only 9% of features moved; the relationship the model learned no longer holds"
+    }
+  ],
+  "thresholds": {
+    "target_threshold": 0.2,
+    "feature_drift_share": 0.3,
+    "min_window_rows": 500
+  }
+}
