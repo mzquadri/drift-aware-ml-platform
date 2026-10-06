@@ -125,30 +125,56 @@ detector arrives at the same time as the monitor that was already running**, and
 costs a dependency plus a parameter that has to be recalibrated per deployment.
 Measured, written down, not adopted.
 
-### What the same run found about the monitor that is here
+### What the same run found about the monitor that is here, and the fix
 
-`decide_retrain` returns `True` from 500 rows of 2012, which is not the behaviour
-the table above describes. The first 500 rows are **January only**, against a
-reference spanning twelve months, so `temp`, `atemp`, `season`, `mnth`,
-`holiday` and `windspeed` all cross their thresholds for calendar reasons.
+`decide_retrain` used to return `True` from 500 rows of 2012, and not for the
+reason the table above describes. The first 500 rows are **January only**,
+against a reference spanning twelve months, so `temp`, `atemp`, `season`,
+`mnth`, `holiday` and `windspeed` all crossed their thresholds for calendar
+reasons. The 0.09 feature share quoted earlier is a full-year number; at every
+partial window it was 55–73%, falling only once the serving window came round to
+the same seasons as the reference.
 
-| rows | days | months present | feature share | target |
+`min_window_rows` is 500, which is 21 days. The guard was right in principle and
+counting the wrong thing: no number of rows inside a single season makes that
+comparison mean what it is read to mean.
+
+The correction is to compare like with like — January against January, a year
+apart — which is the year-over-year alignment used against the same confound in
+seasonal churn models ([arXiv:2608.18174](https://arxiv.org/abs/2608.18174),
+reporting ROC-AUC 0.767 → 0.864 and a third fewer false alarms). This project
+already pays that method's main cost, because the reference *is* the prior year.
+
+Two things had to change together, and the order mattered.
+
+**A p-value runs the other way.** Evidently picks its test by how much reference
+data there is: a distance above roughly a thousand rows, a **K-S p-value** below.
+This code compared both with `score > threshold`, which for a p-value is
+backwards in both directions at once — identical data read as drifted (p = 1.0),
+and overwhelming drift read as quiet (p = 1.6e-23). It was dormant only because
+the default reference is a whole year. Aligning seasons shrinks the reference
+and would have woken it, so it is fixed first: `ColumnDrift` now knows which way
+its own test runs.
+
+**Then the guard.** The reference is cut to the seasons being served, and a
+second guard refuses to judge when too little comparable history remains —
+because below about a thousand rows the test becomes a p-value, and a p-value at
+these sample sizes rejects differences far too small to retrain on.
+
+| rows | days | months | before | after |
 |---|---|---|---|---|
-| 500 | 21 | 1 | 0.64 | 0.169 |
-| 1500 | 62 | 1–3 | 0.55 | 0.044 |
-| 4000 | 167 | 1–6 | 0.55 | 0.494 |
-| 8734 | 364 | 1–12 | **0.09** | 0.679 |
+| 500 | 21 | Jan | **retrain**, 64% of features | *declines*, 688 comparable rows |
+| 720 | 30 | Jan | **retrain**, 55% of features | *declines*, 688 comparable rows |
+| 1000 | 42 | Jan–Feb | retrain, 55% of features | **retrain**, target moved **1.243** |
+| 8734 | 364 | all | retrain, target 0.679 | retrain, target 0.679 |
 
-The 0.09 that the section above calls nearly silent is a full-year number. At
-every partial window the feature share is 55–73%, and it falls only when the
-serving window finally covers the same seasons as the reference.
+The false alarm at 21 days is gone, and the real signal arrives **sooner**: the
+unaligned target did not cross its threshold until about row 2500, 104 days in,
+where the aligned comparison is certain by day 42. Fewer wrong answers and an
+earlier right one, from comparing comparable windows.
 
-`min_window_rows` is 500, which is 21 days. The guard is right in principle — it
-exists precisely so a short window cannot fail a distribution test for reasons
-that have nothing to do with the world moving — and it counts the wrong thing. No
-number of rows inside a single season makes that comparison mean what it is being
-read to mean. Changing it changes when retraining fires, so it is recorded here
-rather than quietly adjusted.
+The full-year figures are untouched, because a full-year window selects every
+month and alignment becomes a no-op.
 
 ## Why this dataset
 

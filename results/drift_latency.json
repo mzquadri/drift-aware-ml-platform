@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-10-06T19:37:38Z",
+  "generated_utc": "2026-10-06T22:18:35Z",
   "environment": {
     "python": "3.13.5",
     "river": "0.26.1",
@@ -173,20 +173,20 @@
       "months_present": [
         1
       ],
-      "target_drift": 0.1521,
-      "feature_drift_share": 0.7273,
-      "drifted_columns": [
-        "temp",
-        "atemp",
-        "hum",
-        "windspeed",
-        "season",
-        "mnth",
-        "holiday",
-        "weathersit"
-      ],
-      "retrain": false,
-      "reason": "serving window has 168 rows, below the 500 needed for the test to mean anything"
+      "unaligned": {
+        "reference_rows": 8645,
+        "feature_drift_share": 0.7273,
+        "target_drift": 0.1521,
+        "retrain": false
+      },
+      "aligned": {
+        "reference_rows": 688,
+        "feature_drift_share": 0.4545,
+        "target_drift": 0.0,
+        "method": "K-S p_value",
+        "retrain": false,
+        "reason": "serving window has 168 rows, below the 500 needed for the test to mean anything"
+      }
     },
     {
       "rows": 336,
@@ -194,18 +194,20 @@
       "months_present": [
         1
       ],
-      "target_drift": 0.1437,
-      "feature_drift_share": 0.5455,
-      "drifted_columns": [
-        "temp",
-        "atemp",
-        "hum",
-        "windspeed",
-        "season",
-        "mnth"
-      ],
-      "retrain": false,
-      "reason": "serving window has 336 rows, below the 500 needed for the test to mean anything"
+      "unaligned": {
+        "reference_rows": 8645,
+        "feature_drift_share": 0.5455,
+        "target_drift": 0.1437,
+        "retrain": false
+      },
+      "aligned": {
+        "reference_rows": 688,
+        "feature_drift_share": 0.4545,
+        "target_drift": 0.0,
+        "method": "K-S p_value",
+        "retrain": false,
+        "reason": "serving window has 336 rows, below the 500 needed for the test to mean anything"
+      }
     },
     {
       "rows": 500,
@@ -213,19 +215,20 @@
       "months_present": [
         1
       ],
-      "target_drift": 0.1693,
-      "feature_drift_share": 0.6364,
-      "drifted_columns": [
-        "temp",
-        "atemp",
-        "hum",
-        "windspeed",
-        "season",
-        "mnth",
-        "holiday"
-      ],
-      "retrain": true,
-      "reason": "64% of features drifted (temp, atemp, hum, windspeed, season, mnth, holiday), at or over the 30% threshold"
+      "unaligned": {
+        "reference_rows": 8645,
+        "feature_drift_share": 0.6364,
+        "target_drift": 0.1693,
+        "retrain": true
+      },
+      "aligned": {
+        "reference_rows": 688,
+        "feature_drift_share": 0.6364,
+        "target_drift": 0.0,
+        "method": "K-S p_value",
+        "retrain": false,
+        "reason": "only 688 rows of reference cover the seasons being served, below the 1000 needed before the comparison stops rejecting differences too small to act on"
+      }
     },
     {
       "rows": 720,
@@ -233,18 +236,20 @@
       "months_present": [
         1
       ],
-      "target_drift": 0.1221,
-      "feature_drift_share": 0.5455,
-      "drifted_columns": [
-        "temp",
-        "atemp",
-        "hum",
-        "windspeed",
-        "season",
-        "mnth"
-      ],
-      "retrain": true,
-      "reason": "55% of features drifted (temp, atemp, hum, windspeed, season, mnth), at or over the 30% threshold"
+      "unaligned": {
+        "reference_rows": 8645,
+        "feature_drift_share": 0.5455,
+        "target_drift": 0.1221,
+        "retrain": true
+      },
+      "aligned": {
+        "reference_rows": 688,
+        "feature_drift_share": 0.5455,
+        "target_drift": 0.0,
+        "method": "K-S p_value",
+        "retrain": false,
+        "reason": "only 688 rows of reference cover the seasons being served, below the 1000 needed before the comparison stops rejecting differences too small to act on"
+      }
     },
     {
       "rows": 1000,
@@ -253,18 +258,20 @@
         1,
         2
       ],
-      "target_drift": 0.0769,
-      "feature_drift_share": 0.5455,
-      "drifted_columns": [
-        "temp",
-        "atemp",
-        "hum",
-        "windspeed",
-        "season",
-        "mnth"
-      ],
-      "retrain": true,
-      "reason": "55% of features drifted (temp, atemp, hum, windspeed, season, mnth), at or over the 30% threshold"
+      "unaligned": {
+        "reference_rows": 8645,
+        "feature_drift_share": 0.5455,
+        "target_drift": 0.0769,
+        "retrain": true
+      },
+      "aligned": {
+        "reference_rows": 1337,
+        "feature_drift_share": 0.4545,
+        "target_drift": 1.2426,
+        "method": "Wasserstein distance (normed)",
+        "retrain": true,
+        "reason": "target 'cnt' drifted 1.243 by Wasserstein distance (normed), over the 0.2 threshold, while only 45% of features moved; the relationship the model learned no longer holds"
+      }
     },
     {
       "rows": 1500,
@@ -274,18 +281,20 @@
         2,
         3
       ],
-      "target_drift": 0.0436,
-      "feature_drift_share": 0.5455,
-      "drifted_columns": [
-        "temp",
-        "atemp",
-        "hum",
-        "windspeed",
-        "season",
-        "mnth"
-      ],
-      "retrain": true,
-      "reason": "55% of features drifted (temp, atemp, hum, windspeed, season, mnth), at or over the 30% threshold"
+      "unaligned": {
+        "reference_rows": 8645,
+        "feature_drift_share": 0.5455,
+        "target_drift": 0.0436,
+        "retrain": true
+      },
+      "aligned": {
+        "reference_rows": 2067,
+        "feature_drift_share": 0.4545,
+        "target_drift": 1.0237,
+        "method": "Wasserstein distance (normed)",
+        "retrain": true,
+        "reason": "target 'cnt' drifted 1.024 by Wasserstein distance (normed), over the 0.2 threshold, while only 45% of features moved; the relationship the model learned no longer holds"
+      }
     },
     {
       "rows": 1855,
@@ -295,18 +304,20 @@
         2,
         3
       ],
-      "target_drift": 0.0778,
-      "feature_drift_share": 0.5455,
-      "drifted_columns": [
-        "temp",
-        "atemp",
-        "hum",
-        "windspeed",
-        "season",
-        "mnth"
-      ],
-      "retrain": true,
-      "reason": "55% of features drifted (temp, atemp, hum, windspeed, season, mnth), at or over the 30% threshold"
+      "unaligned": {
+        "reference_rows": 8645,
+        "feature_drift_share": 0.5455,
+        "target_drift": 0.0778,
+        "retrain": true
+      },
+      "aligned": {
+        "reference_rows": 2067,
+        "feature_drift_share": 0.2727,
+        "target_drift": 1.2193,
+        "method": "Wasserstein distance (normed)",
+        "retrain": true,
+        "reason": "target 'cnt' drifted 1.219 by Wasserstein distance (normed), over the 0.2 threshold, while only 27% of features moved; the relationship the model learned no longer holds"
+      }
     },
     {
       "rows": 2500,
@@ -317,18 +328,20 @@
         3,
         4
       ],
-      "target_drift": 0.2601,
-      "feature_drift_share": 0.5455,
-      "drifted_columns": [
-        "temp",
-        "atemp",
-        "hum",
-        "windspeed",
-        "season",
-        "mnth"
-      ],
-      "retrain": true,
-      "reason": "target 'cnt' drifted 0.260 by Wasserstein distance (normed), over the 0.2 threshold, while only 55% of features moved; the relationship the model learned no longer holds"
+      "unaligned": {
+        "reference_rows": 8645,
+        "feature_drift_share": 0.5455,
+        "target_drift": 0.2601,
+        "retrain": true
+      },
+      "aligned": {
+        "reference_rows": 2786,
+        "feature_drift_share": 0.3636,
+        "target_drift": 1.0214,
+        "method": "Wasserstein distance (normed)",
+        "retrain": true,
+        "reason": "target 'cnt' drifted 1.021 by Wasserstein distance (normed), over the 0.2 threshold, while only 36% of features moved; the relationship the model learned no longer holds"
+      }
     },
     {
       "rows": 4000,
@@ -341,18 +354,20 @@
         5,
         6
       ],
-      "target_drift": 0.4938,
-      "feature_drift_share": 0.5455,
-      "drifted_columns": [
-        "temp",
-        "atemp",
-        "hum",
-        "windspeed",
-        "season",
-        "mnth"
-      ],
-      "retrain": true,
-      "reason": "target 'cnt' drifted 0.494 by Wasserstein distance (normed), over the 0.2 threshold, while only 55% of features moved; the relationship the model learned no longer holds"
+      "unaligned": {
+        "reference_rows": 8645,
+        "feature_drift_share": 0.5455,
+        "target_drift": 0.4938,
+        "retrain": true
+      },
+      "aligned": {
+        "reference_rows": 4250,
+        "feature_drift_share": 0.3636,
+        "target_drift": 0.6972,
+        "method": "Wasserstein distance (normed)",
+        "retrain": true,
+        "reason": "target 'cnt' drifted 0.697 by Wasserstein distance (normed), over the 0.2 threshold, while only 36% of features moved; the relationship the model learned no longer holds"
+      }
     },
     {
       "rows": 8734,
@@ -371,13 +386,20 @@
         11,
         12
       ],
-      "target_drift": 0.6792,
-      "feature_drift_share": 0.0909,
-      "drifted_columns": [
-        "hum"
-      ],
-      "retrain": true,
-      "reason": "target 'cnt' drifted 0.679 by Wasserstein distance (normed), over the 0.2 threshold, while only 9% of features moved; the relationship the model learned no longer holds"
+      "unaligned": {
+        "reference_rows": 8645,
+        "feature_drift_share": 0.0909,
+        "target_drift": 0.6792,
+        "retrain": true
+      },
+      "aligned": {
+        "reference_rows": 8645,
+        "feature_drift_share": 0.0909,
+        "target_drift": 0.6792,
+        "method": "Wasserstein distance (normed)",
+        "retrain": true,
+        "reason": "target 'cnt' drifted 0.679 by Wasserstein distance (normed), over the 0.2 threshold, while only 9% of features moved; the relationship the model learned no longer holds"
+      }
     }
   ],
   "thresholds": {

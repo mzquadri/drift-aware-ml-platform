@@ -122,7 +122,9 @@ def test_a_p_value_is_drift_when_it_is_small():
 
 def test_the_policy_reads_a_p_value_target_the_right_way_round():
     target = scored(P_VALUE, 1.6e-23)
-    quiet = DriftResult(columns=[col("f0", 0.01)], target_drift=target, n_current=5000)
+    quiet = DriftResult(
+        columns=[col("f0", 0.01)], target_drift=target, n_reference=8000, n_current=5000
+    )
 
     decision = decide_retrain(quiet)
 
@@ -132,7 +134,9 @@ def test_the_policy_reads_a_p_value_target_the_right_way_round():
 
 def test_the_policy_leaves_a_quiet_p_value_alone():
     target = scored(P_VALUE, 0.94)
-    quiet = DriftResult(columns=[col("f0", 0.01)], target_drift=target, n_current=5000)
+    quiet = DriftResult(
+        columns=[col("f0", 0.01)], target_drift=target, n_reference=8000, n_current=5000
+    )
 
     assert decide_retrain(quiet).retrain is False
 
@@ -140,8 +144,12 @@ def test_the_policy_leaves_a_quiet_p_value_alone():
 def test_a_distance_target_still_behaves_as_it_did():
     # The default configuration uses a full year of reference and therefore a distance.
     # Nothing about that path may move.
-    loud = DriftResult(columns=[col("f0", 0.01)], target_drift=col("cnt", 0.679), n_current=5000)
-    hushed = DriftResult(columns=[col("f0", 0.01)], target_drift=col("cnt", 0.02), n_current=5000)
+    loud = DriftResult(
+        columns=[col("f0", 0.01)], target_drift=col("cnt", 0.679), n_reference=8000, n_current=5000
+    )
+    hushed = DriftResult(
+        columns=[col("f0", 0.01)], target_drift=col("cnt", 0.02), n_reference=8000, n_current=5000
+    )
 
     assert decide_retrain(loud).retrain is True
     assert decide_retrain(hushed).retrain is False
@@ -154,10 +162,109 @@ def test_the_reason_describes_the_comparison_that_was_actually_made():
     because it fell below.
     """
     p = DriftResult(
-        columns=[col("f0", 0.01)], target_drift=scored(P_VALUE, 1.6e-23), n_current=5000
+        columns=[col("f0", 0.01)],
+        target_drift=scored(P_VALUE, 1.6e-23),
+        n_reference=8000,
+        n_current=5000,
     )
-    d = DriftResult(columns=[col("f0", 0.01)], target_drift=col("cnt", 0.679), n_current=5000)
+    d = DriftResult(
+        columns=[col("f0", 0.01)], target_drift=col("cnt", 0.679), n_reference=8000, n_current=5000
+    )
 
     assert "under" in decide_retrain(p).reason
     assert "over" not in decide_retrain(p).reason
     assert "over" in decide_retrain(d).reason
+
+
+# ----------------------------------------------- comparing like seasons with like
+
+import pandas as pd  # noqa: E402
+
+from mlplatform.drift import align_reference  # noqa: E402
+
+
+def frame(months: list[int], rows_per_month: int = 10) -> pd.DataFrame:
+    rows = [{"mnth": m, "cnt": m * 10 + i} for m in months for i in range(rows_per_month)]
+    return pd.DataFrame(rows)
+
+
+def test_the_reference_is_cut_down_to_the_months_being_served():
+    reference = frame(list(range(1, 13)))
+    current = frame([1])
+
+    aligned = align_reference(reference, current)
+
+    assert sorted(aligned["mnth"].unique()) == [1]
+    assert len(aligned) == 10
+
+
+def test_a_full_year_window_leaves_the_reference_alone():
+    """The published figures are full-year, and alignment must not disturb them."""
+    reference = frame(list(range(1, 13)))
+    current = frame(list(range(1, 13)))
+
+    aligned = align_reference(reference, current)
+
+    assert len(aligned) == len(reference)
+
+
+def test_alignment_is_skipped_when_the_season_column_is_absent():
+    # Not every frame carries mnth. Dropping every row would be worse than not aligning.
+    reference = pd.DataFrame({"cnt": [1, 2, 3]})
+    current = pd.DataFrame({"cnt": [4, 5]})
+
+    assert len(align_reference(reference, current)) == 3
+
+
+def test_a_month_the_reference_never_saw_leaves_nothing_to_compare():
+    # Serving a season absent from the reference is not drift, it is no evidence.
+    reference = frame([1, 2])
+    current = frame([7])
+
+    assert len(align_reference(reference, current)) == 0
+
+
+def test_the_policy_refuses_when_the_comparable_reference_is_too_thin():
+    thin = DriftResult(
+        columns=[col("f0", 0.9)],
+        target_drift=col("cnt", 0.9),
+        n_reference=40,
+        n_current=5000,
+    )
+
+    decision = decide_retrain(thin)
+
+    assert decision.retrain is False
+    assert "reference" in decision.reason
+
+
+def test_a_reference_too_small_for_a_distance_test_is_refused():
+    """688 rows of January is comparable but not enough to judge with.
+
+    Below about a thousand rows Evidently answers with a p-value, and a p-value at
+    these sample sizes rejects differences too small to act on: aligning January
+    against January leaves 688 reference rows and 64% of features "drifting". The
+    honest answer there is that there is not enough comparable history yet.
+    """
+    thin = DriftResult(
+        columns=[col("f0", 0.9)],
+        target_drift=col("cnt", 0.9),
+        n_reference=688,
+        n_current=500,
+    )
+
+    decision = decide_retrain(thin)
+
+    assert decision.retrain is False
+    assert "reference" in decision.reason
+
+
+def test_enough_comparable_reference_lets_the_decision_through():
+    ok = DriftResult(
+        columns=[col("f0", 0.01)],
+        target_drift=col("cnt", 0.9),
+        n_reference=2067,
+        n_current=1500,
+    )
+
+    assert decide_retrain(ok).retrain is True

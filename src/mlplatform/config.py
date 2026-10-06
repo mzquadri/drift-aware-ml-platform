@@ -90,25 +90,38 @@ class DriftConfig:
 
     Measured on this dataset, the covariates barely move between 2011 and 2012:
     only humidity crosses the per-column threshold, giving a feature drift share
-    of 0.17. The target moves enormously, 0.68 on the same scale, because mean
-    ridership rises from 144 to 235 an hour.
+    of 0.09 across the eleven feature columns. The target moves enormously, 0.68 on
+    the same scale, because mean ridership rises from 144 to 235 an hour.
 
-    That is concept drift, not covariate drift, and it is why watching features
-    alone is not enough here. A feature-only monitor would sit quiet through a
-    63% rise in demand. So the policy fires on either signal.
+    Both figures are full-year. A partial serving window is compared against the same
+    seasons a year earlier, because January against twelve months reports the calendar
+    rather than drift; see `align_reference`.
+
+    That is label shift rather than covariate shift - P(y) moving while P(X) holds
+    still - and it is why watching features alone is not enough here. A feature-only
+    monitor would sit quiet through a 63% rise in demand. So the policy fires on
+    either signal.
     """
 
     # Share of feature columns that must drift before that alone counts.
     feature_drift_share: float = _env_float("DRIFT_FEATURE_SHARE", 0.3)
-    # Per-column drift score. Evidently 0.7 reports a distance (Wasserstein for
-    # numeric, Jensen-Shannon for categorical), so this is a distance, not a
-    # p-value: higher means more drift.
+    # Per-column threshold. Evidently picks the test by how much reference data there
+    # is: a distance above roughly a thousand rows, a p-value below. The two run in
+    # opposite directions, so this number is read against whichever arrived and
+    # ColumnDrift.exceeds applies the direction.
     column_threshold: float = _env_float("DRIFT_COLUMN_THRESHOLD", 0.1)
     # The target or prediction distribution moving this far is on its own enough
     # to retrain, whatever the features are doing.
     target_threshold: float = _env_float("DRIFT_TARGET_THRESHOLD", 0.2)
     # Never retrain on fewer rows than this; small windows drift by accident.
     min_window_rows: int = _env_int("DRIFT_MIN_WINDOW_ROWS", 500)
+    # The same demand on the other side of the comparison. Once the reference is cut
+    # to the seasons being served it can be thin, and below about a thousand rows the
+    # test becomes a p-value, which at these sample sizes rejects differences far too
+    # small to retrain on. Aligning January against January leaves 688 rows of 2011
+    # and reports 64% of features drifting. The honest answer there is that there is
+    # not yet enough comparable history, so the policy declines to judge.
+    min_reference_rows: int = _env_int("DRIFT_MIN_REFERENCE_ROWS", 1000)
 
 
 @dataclass(frozen=True)

@@ -106,6 +106,43 @@ class RetrainDecision:
         return {"retrain": self.retrain, "reason": self.reason, "drift": self.drift.as_dict()}
 
 
+#: The column that says which season a row belongs to. Dropping to a bare row count
+#: cannot express "comparable", because rows are not interchangeable across a year.
+SEASON_COLUMN = "mnth"
+
+
+def align_reference(
+    reference: pd.DataFrame,
+    current: pd.DataFrame,
+    cfg: Config | None = None,
+) -> pd.DataFrame:
+    """Cut the reference down to the seasons the serving window actually covers.
+
+    Comparing three weeks of January against a whole year reports that temperature,
+    season, month and holiday have all moved, which is true and is not drift: it is
+    the calendar. On this data that is 55-73% of features at every partial window,
+    against the 9% the full-year comparison reports. The feature share only falls
+    when the serving window has come round to the same seasons as the reference.
+
+    The correction is to compare like with like - January against January, a year
+    apart - which is the year-over-year alignment used for the same confound in
+    seasonal churn models (arXiv:2608.18174). The cost there is needing a full prior
+    year of history, and this project already has one: the reference *is* the prior
+    year.
+
+    A full-year serving window selects every month and the reference is returned
+    whole, so the published figures are untouched. Only partial windows change.
+
+    Alignment is skipped when there is no season column to align on, because
+    returning an empty reference would be worse than comparing unlike windows.
+    """
+    del cfg  # kept for symmetry with the rest of the module
+    if SEASON_COLUMN not in reference.columns or SEASON_COLUMN not in current.columns:
+        return reference
+    seasons = current[SEASON_COLUMN].unique()
+    return reference[reference[SEASON_COLUMN].isin(seasons)]
+
+
 def _definition(cfg: Config, extra_numeric: list[str] | None = None):
     """Tell Evidently which integer columns are really categories.
 
@@ -226,6 +263,20 @@ def decide_retrain(result: DriftResult, cfg: Config | None = None) -> RetrainDec
             reason=(
                 f"serving window has {result.n_current} rows, below the "
                 f"{cfg.drift.min_window_rows} needed for the test to mean anything"
+            ),
+            drift=result,
+        )
+
+    # The same guard on the other side. Once the reference is cut to the seasons being
+    # served it can be thin, and a comparison against a handful of comparable rows
+    # fails a distribution test for the same reason a tiny serving window does.
+    if result.n_reference < cfg.drift.min_reference_rows:
+        return RetrainDecision(
+            retrain=False,
+            reason=(
+                f"only {result.n_reference} rows of reference cover the seasons being "
+                f"served, below the {cfg.drift.min_reference_rows} needed before the "
+                "comparison stops rejecting differences too small to act on"
             ),
             drift=result,
         )

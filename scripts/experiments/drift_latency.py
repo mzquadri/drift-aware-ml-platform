@@ -40,7 +40,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from mlplatform.config import CONFIG  # noqa: E402
 from mlplatform.data import ensure_raw, period_frames  # noqa: E402
-from mlplatform.drift import decide_retrain, measure  # noqa: E402
+from mlplatform.drift import align_reference, decide_retrain, measure  # noqa: E402
 from mlplatform.experiments.latency import calibrate, scan  # noqa: E402
 from mlplatform.features import feature_frame, fit_pipeline  # noqa: E402
 
@@ -51,6 +51,8 @@ ADWIN_DELTAS = (0.002, 1e-3, 1e-4, 1e-5, 1e-6, 1e-7, 1e-8, 1e-10)
 
 #: Where to probe the window monitor. Hourly data, so 24 rows is a day.
 WINDOW_PROBES = (168, 336, 500, 720, 1000, 1500, 1855, 2500, 4000, 8734)
+
+#: Where the aligned comparison first clears the reference guard and fires honestly.
 
 
 def _digest_of_data() -> str:
@@ -113,20 +115,36 @@ def main() -> int:
     for rows in WINDOW_PROBES:
         if rows > len(current):
             continue
-        result = measure(reference, current.iloc[:rows])
-        decision = decide_retrain(result)
+        serving = current.iloc[:rows]
+        # Both comparisons, because the difference between them is the finding:
+        # unaligned reports the calendar, aligned reports the world.
+        unaligned = measure(reference, serving)
+        comparable = align_reference(reference, serving)
+        aligned = measure(comparable, serving)
+        decision = decide_retrain(aligned)
         window.append(
             {
                 "rows": rows,
                 "days": round(rows / 24, 1),
-                "months_present": sorted(int(m) for m in current.iloc[:rows]["mnth"].unique()),
-                "target_drift": round(result.target_drift.score, 4)
-                if result.target_drift
-                else None,
-                "feature_drift_share": round(result.feature_drift_share, 4),
-                "drifted_columns": result.drifted_columns,
-                "retrain": decision.retrain,
-                "reason": decision.reason,
+                "months_present": sorted(int(m) for m in serving["mnth"].unique()),
+                "unaligned": {
+                    "reference_rows": len(reference),
+                    "feature_drift_share": round(unaligned.feature_drift_share, 4),
+                    "target_drift": round(unaligned.target_drift.score, 4)
+                    if unaligned.target_drift
+                    else None,
+                    "retrain": decide_retrain(unaligned).retrain,
+                },
+                "aligned": {
+                    "reference_rows": len(comparable),
+                    "feature_drift_share": round(aligned.feature_drift_share, 4),
+                    "target_drift": round(aligned.target_drift.score, 4)
+                    if aligned.target_drift
+                    else None,
+                    "method": aligned.target_drift.method if aligned.target_drift else None,
+                    "retrain": decision.retrain,
+                    "reason": decision.reason,
+                },
             }
         )
 

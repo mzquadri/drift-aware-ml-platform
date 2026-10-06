@@ -65,7 +65,14 @@ def _monitored(frame, cfg=CONFIG):
 def cmd_monitor(args: argparse.Namespace) -> int:
     """Compare the serving window against the training window and decide."""
     from .data import period_frames
-    from .drift import decide_retrain, measure, write_decision, write_report
+    from .drift import (
+        SEASON_COLUMN,
+        align_reference,
+        decide_retrain,
+        measure,
+        write_decision,
+        write_report,
+    )
 
     periods = period_frames(CONFIG.data)
     reference = _monitored(periods.reference)
@@ -87,12 +94,25 @@ def cmd_monitor(args: argparse.Namespace) -> int:
             logged = logged.rename(columns={"prediction": CONFIG.data.target})
         current = _monitored(logged)
 
-    result = measure(reference, current, CONFIG)
+    # Compare the serving window against the same seasons a year earlier, not against
+    # the whole reference year. Three weeks of January against twelve months reports
+    # that temperature, season and month have moved, which is the calendar rather than
+    # drift. A full-year window selects every month and this is a no-op.
+    comparable = align_reference(reference, current, CONFIG)
+    if len(comparable) < len(reference):
+        log.info(
+            "reference narrowed to %d of %d rows covering the %d month(s) being served",
+            len(comparable),
+            len(reference),
+            current[SEASON_COLUMN].nunique() if SEASON_COLUMN in current.columns else 0,
+        )
+
+    result = measure(comparable, current, CONFIG)
     decision = decide_retrain(result, CONFIG)
 
     write_decision(decision, ARTIFACTS / "last_drift.json")
     if not args.no_html:
-        report = write_report(reference, current, ARTIFACTS / "drift_report.html", CONFIG)
+        report = write_report(comparable, current, ARTIFACTS / "drift_report.html", CONFIG)
         log.info("report written to %s", report)
 
     print(json.dumps({"retrain": decision.retrain, "reason": decision.reason}, indent=2))
