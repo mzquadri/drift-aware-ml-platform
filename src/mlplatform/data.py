@@ -45,39 +45,61 @@ def _download(cfg: DataConfig) -> bytes:
         return response.read()
 
 
+def _verify_cached(csv_path: Path, lock_path: Path) -> Path:
+    """Check the cached file against the digest recorded for it."""
+    if not lock_path.exists():
+        raise DataIntegrityError(
+            f"{csv_path.name} is cached with no recorded digest, so it cannot be "
+            "checked. Delete data/raw and let it download again."
+        )
+
+    recorded = lock_path.read_text(encoding="utf-8").strip()
+    actual = _sha256(csv_path.read_bytes())
+    if actual != recorded:
+        raise DataIntegrityError(
+            f"{csv_path.name} does not match its recorded digest: recorded "
+            f"{recorded[:12]}, found {actual[:12]}. Every published figure is computed "
+            "from this file. Delete data/raw to accept a new one deliberately."
+        )
+    return csv_path
+
+
 def ensure_raw(cfg: DataConfig | None = None) -> Path:
-    """Return the path to hour.csv, downloading it once and pinning its hash.
+    """Return the path to hour.csv, downloading it once and recording its hash.
 
     The hash is recorded on first download rather than hard-coded, so the check
     is real instead of a number copied from somewhere and never verified.
+
+    Two things that were wrong with the earlier version of this, and both made
+    the check weaker than it reads. It returned early whenever the file and the
+    lock were both present, so after the first run nothing was ever verified
+    again; appending a row to hour.csv was loaded without complaint, and every
+    number in the README is computed from that file. And the digest it recorded
+    was the *archive's*, while what gets read is the member extracted from it,
+    so the two covered different bytes and could never have disagreed usefully.
+
+    Now the digest is of the file that is actually read, and it is checked on
+    every call rather than on the one call that downloads.
     """
     cfg = cfg or CONFIG.data
     cfg.cache_dir.mkdir(parents=True, exist_ok=True)
     csv_path = cfg.cache_dir / cfg.member
     lock_path = cfg.cache_dir / "archive.sha256"
 
-    if csv_path.exists() and lock_path.exists():
-        return csv_path
+    if csv_path.exists():
+        return _verify_cached(csv_path, lock_path)
 
     archive = _download(cfg)
-    digest = _sha256(archive)
-
-    if lock_path.exists():
-        recorded = lock_path.read_text(encoding="utf-8").strip()
-        if recorded != digest:
-            raise DataIntegrityError(
-                f"upstream archive changed: recorded {recorded}, got {digest}. "
-                "Delete data/raw to accept the new file deliberately."
-            )
-
     with zipfile.ZipFile(io.BytesIO(archive)) as zf:
         names = [n for n in zf.namelist() if n.endswith(cfg.member)]
         if not names:
             raise DataIntegrityError(f"{cfg.member} not present in the archive")
-        csv_path.write_bytes(zf.read(names[0]))
+        member = zf.read(names[0])
 
+    csv_path.write_bytes(member)
+    digest = _sha256(member)
     lock_path.write_text(digest + "\n", encoding="utf-8")
-    log.info("wrote %s (archive sha256 %s)", csv_path, digest[:12])
+    log.info("wrote %s (sha256 %s)", csv_path, digest[:12])
     return csv_path
 
 
