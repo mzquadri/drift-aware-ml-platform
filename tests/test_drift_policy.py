@@ -92,3 +92,72 @@ def test_decision_serialises_for_the_airflow_branch():
 def test_share_is_zero_when_no_columns_were_scored():
     """Guards a division by zero on an empty comparison."""
     assert DriftResult().feature_drift_share == 0.0
+
+
+# ----------------------------------------------- which way the comparison runs
+
+P_VALUE = "K-S p_value"
+DISTANCE = "Wasserstein distance (normed)"
+
+
+def scored(method: str, score: float, threshold: float = THRESHOLD) -> ColumnDrift:
+    return ColumnDrift(column="cnt", method=method, score=score, threshold=threshold)
+
+
+def test_a_distance_is_drift_when_it_is_large():
+    assert scored(DISTANCE, 0.9).drifted is True
+    assert scored(DISTANCE, 0.001).drifted is False
+
+
+def test_a_p_value_is_drift_when_it_is_small():
+    """Evidently returns a p-value once the reference falls to about a thousand rows.
+
+    A p-value runs the other way: small means the distributions differ. Comparing it
+    the same way as a distance inverts the verdict in both directions, so identical
+    data reads as drifted and overwhelming drift reads as quiet.
+    """
+    assert scored(P_VALUE, 1.6e-23).drifted is True
+    assert scored(P_VALUE, 1.0).drifted is False
+
+
+def test_the_policy_reads_a_p_value_target_the_right_way_round():
+    target = scored(P_VALUE, 1.6e-23)
+    quiet = DriftResult(columns=[col("f0", 0.01)], target_drift=target, n_current=5000)
+
+    decision = decide_retrain(quiet)
+
+    assert decision.retrain is True
+    assert "cnt" in decision.reason
+
+
+def test_the_policy_leaves_a_quiet_p_value_alone():
+    target = scored(P_VALUE, 0.94)
+    quiet = DriftResult(columns=[col("f0", 0.01)], target_drift=target, n_current=5000)
+
+    assert decide_retrain(quiet).retrain is False
+
+
+def test_a_distance_target_still_behaves_as_it_did():
+    # The default configuration uses a full year of reference and therefore a distance.
+    # Nothing about that path may move.
+    loud = DriftResult(columns=[col("f0", 0.01)], target_drift=col("cnt", 0.679), n_current=5000)
+    hushed = DriftResult(columns=[col("f0", 0.01)], target_drift=col("cnt", 0.02), n_current=5000)
+
+    assert decide_retrain(loud).retrain is True
+    assert decide_retrain(hushed).retrain is False
+
+
+def test_the_reason_describes_the_comparison_that_was_actually_made():
+    """The reason is what someone reads at three in the morning; it has to be true.
+
+    "0.000, over the 0.2 threshold" is false for a p-value, which is drift precisely
+    because it fell below.
+    """
+    p = DriftResult(
+        columns=[col("f0", 0.01)], target_drift=scored(P_VALUE, 1.6e-23), n_current=5000
+    )
+    d = DriftResult(columns=[col("f0", 0.01)], target_drift=col("cnt", 0.679), n_current=5000)
+
+    assert "under" in decide_retrain(p).reason
+    assert "over" not in decide_retrain(p).reason
+    assert "over" in decide_retrain(d).reason

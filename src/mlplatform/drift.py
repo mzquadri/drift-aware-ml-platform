@@ -32,8 +32,29 @@ class ColumnDrift:
     threshold: float
 
     @property
+    def is_p_value(self) -> bool:
+        """Does a smaller number mean more drift?
+
+        Evidently picks the test by how much reference data there is: above about a
+        thousand rows it reports a distance, below that a p-value. The two run in
+        opposite directions, and the method name is the only thing that says which
+        arrived. It comes from the metric's `config`, so this reads a field rather
+        than parsing a display name.
+        """
+        return "p_value" in self.method.lower()
+
+    def exceeds(self, threshold: float) -> bool:
+        """Is this score past `threshold`, in whichever direction the test runs?
+
+        One rule in one place. A distance is drift when it is large; a p-value is
+        drift when it is small, because a small p-value is the evidence that the two
+        samples did not come from the same distribution.
+        """
+        return self.score < threshold if self.is_p_value else self.score > threshold
+
+    @property
     def drifted(self) -> bool:
-        return self.score > self.threshold
+        return self.exceeds(self.threshold)
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -210,12 +231,16 @@ def decide_retrain(result: DriftResult, cfg: Config | None = None) -> RetrainDec
         )
 
     target = result.target_drift
-    if target is not None and target.score > cfg.drift.target_threshold:
+    if target is not None and target.exceeds(cfg.drift.target_threshold):
+        # Say which way the comparison ran. "0.000, over the threshold" is false for a
+        # p-value, and the reason line is what someone reads at three in the morning.
+        side = "under" if target.is_p_value else "over"
+        score = f"{target.score:.3g}" if target.is_p_value else f"{target.score:.3f}"
         return RetrainDecision(
             retrain=True,
             reason=(
-                f"target '{target.column}' drifted {target.score:.3f} by {target.method}, "
-                f"over the {cfg.drift.target_threshold} threshold, while only "
+                f"target '{target.column}' drifted {score} by {target.method}, "
+                f"{side} the {cfg.drift.target_threshold} threshold, while only "
                 f"{result.feature_drift_share:.0%} of features moved; the relationship the "
                 f"model learned no longer holds"
             ),
