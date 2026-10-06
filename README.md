@@ -37,9 +37,26 @@ input features. On this data that design is nearly silent: between 2011 and 2012
 only humidity crosses the threshold, a feature drift share of 0.09. Meanwhile
 mean hourly ridership goes from 144 to 235 and the target's drift score is 0.679.
 The covariates barely move; the relationship between them and the target does.
-That is concept drift, and a feature-only monitor sleeps through a 63% rise in
-demand. So [`decide_retrain`](src/mlplatform/drift.py) fires on either signal,
-and checks the target first because that is the one that actually trips here.
+A feature-only monitor sleeps through a 63% rise in demand. So
+[`decide_retrain`](src/mlplatform/drift.py) fires on either signal, and checks
+the target first because that is the one that actually trips here.
+
+Worth naming the three things precisely, because the literature separates them
+and this project only measures two ([Gama et al. 2014](https://dl.acm.org/doi/10.1145/2523813);
+[Lu et al. 2019](https://arxiv.org/abs/2004.05785)):
+
+| | what moves | measured here |
+|---|---|---|
+| Covariate shift | P(X) | feature drift share, **0.09** |
+| Label shift | P(y) | target drift, **0.679** |
+| Real concept drift | P(y\|X) | not monitored directly |
+
+The 0.679 is **label shift**: a distance between two marginal distributions of
+`cnt`. It is a proxy, and on this data a good one. The evidence that the
+*relationship* moved is elsewhere in this table and it is stronger — the 2011
+champion re-scored on 2012 gets MAE 116.57 where a model trained on the new
+window gets 95.48. An old mapping fitting worse than a new one is what P(y|X)
+moving looks like.
 
 **Comparing MAE across different validation windows is meaningless.** The first
 version of the gate compared the challenger's MAE against the champion's stored
@@ -76,6 +93,62 @@ version loaded the champion inline during startup, which meant an unreachable
 registry held startup open for minutes with the service neither live nor able to
 say why. It now loads in a background thread: live immediately, not ready until
 the model arrives, which is exactly the distinction the two probes exist for.
+
+## Would a streaming detector have been faster
+
+The monitor here compares distributions over a window. The concept-drift
+literature does something else: it watches the model's own error one observation
+at a time, with detectors like ADWIN, Page-Hinkley and KSWIN. That family looks
+at the thing the window monitor only proxies, so the obvious question is whether
+it would have spoken sooner.
+
+It would not, and two of the three cannot tell drift from no drift at all.
+`python scripts/experiments/drift_latency.py` streams the 2011 champion over
+held-out 2011 — the regime it was trained on, where any alarm is a false one —
+and over 2012, and writes [`results/drift_latency.json`](results/drift_latency.json):
+
+| detector | control (2011) | 2012 |
+|---|---|---|
+| Page-Hinkley | 57 alarms, first at row 29 | 291 alarms, first at row **29** |
+| ADWIN | 2 alarms, first at row 383 | 8 alarms, first at row 159 |
+| KSWIN | 5 alarms, first at row 195 | 27 alarms, first at row **303** |
+
+Page-Hinkley fires at the same row whether the world moved or not. KSWIN fires
+*later* under drift than without it. Only ADWIN is directionally sensible, and
+at default settings it still raises false alarms.
+
+Calibrated on the control alone — the most sensitive setting that stays silent
+on 2011, never chosen by what it does to 2012 — ADWIN at `delta=1e-5` gives zero
+false alarms and first speaks at row 1855, about 77 days in. The target signal
+already here crosses its threshold between rows 1855 and 2500. **The streaming
+detector arrives at the same time as the monitor that was already running**, and
+costs a dependency plus a parameter that has to be recalibrated per deployment.
+Measured, written down, not adopted.
+
+### What the same run found about the monitor that is here
+
+`decide_retrain` returns `True` from 500 rows of 2012, which is not the behaviour
+the table above describes. The first 500 rows are **January only**, against a
+reference spanning twelve months, so `temp`, `atemp`, `season`, `mnth`,
+`holiday` and `windspeed` all cross their thresholds for calendar reasons.
+
+| rows | days | months present | feature share | target |
+|---|---|---|---|---|
+| 500 | 21 | 1 | 0.64 | 0.169 |
+| 1500 | 62 | 1–3 | 0.55 | 0.044 |
+| 4000 | 167 | 1–6 | 0.55 | 0.494 |
+| 8734 | 364 | 1–12 | **0.09** | 0.679 |
+
+The 0.09 that the section above calls nearly silent is a full-year number. At
+every partial window the feature share is 55–73%, and it falls only when the
+serving window finally covers the same seasons as the reference.
+
+`min_window_rows` is 500, which is 21 days. The guard is right in principle — it
+exists precisely so a short window cannot fail a distribution test for reasons
+that have nothing to do with the world moving — and it counts the wrong thing. No
+number of rows inside a single season makes that comparison mean what it is being
+read to mean. Changing it changes when retraining fires, so it is recorded here
+rather than quietly adjusted.
 
 ## Why this dataset
 
