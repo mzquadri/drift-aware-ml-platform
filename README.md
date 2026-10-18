@@ -1,6 +1,6 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/header-dark.png">
-  <img alt="drift-aware-ml-platform — hourly demand forecasting that detects drift in its own target and retrains" src="docs/assets/header-light.png">
+  <img alt="drift-aware-ml-platform, hourly demand forecasting that detects drift in its own target and retrains" src="docs/assets/header-light.png">
 </picture>
 
 # drift-aware-ml-platform
@@ -23,7 +23,7 @@ engineering against, and what each decision cost.
 
 Three loops. Training fits a challenger on the UCI hourly data, pinned by SHA-256, and ships
 it only through two gates: beat "predict the training mean" by 35%, then beat the current
-champion — re-scored on the challenger's own validation window — by 2%. Every challenger is
+champion, re-scored on the challenger's own validation window, by 2%. Every challenger is
 logged to MLflow; promotion moves the `@champion` alias, which is the pointer the service
 loads. Monitoring compares a serving window against the same seasons a year earlier and
 `decide_retrain` applies the policy. Serving answers predictions, exports Prometheus
@@ -40,14 +40,14 @@ The loop, run end to end. The drift and detector figures come from
 
 | Step | What happened |
 |---|---|
-| 1. Train on 2011 | MAE **51.49**, R² **0.621** on 1,729 held-out hours, against a mean baseline of 98.94. Promoted, registry version 1. |
+| 1. Train on 2011 | MAE **51.49**, R2 **0.621** on 1,729 held-out hours, against a mean baseline of 98.94. Promoted, registry version 1. |
 | 2. Train again, unchanged | *Refused.* "challenger MAE 51.49 is not 2% better than champion 51.49" |
 | 3. Monitor 2012 against 2011 | *Retrain.* Target drifted **0.679**, while only **9%** of features moved |
 | 4. Retrain including 2012 | Champion re-scored on the new window: MAE **116.57**. Challenger: **95.48**, 18% better. Promoted, version 4. |
 | 5. Service reloads | `/ready` reports `model_version: 4`, `/predict` answers in ~2 ms warm |
 
 **The drift signal is not in the features.** Between 2011 and 2012 only humidity crosses the
-per-column threshold — a feature drift share of 0.09 across eleven feature columns — while
+per-column threshold, a feature drift share of 0.09 across eleven feature columns, while
 the target's drift score is 0.679. A monitor watching inputs alone would sleep through a 63%
 rise in demand, so [`decide_retrain`](src/mlplatform/drift.py) fires on either signal and
 checks the target first, because that is the one that trips here.
@@ -68,15 +68,15 @@ The stronger evidence that the relationship moved is in the table above: the 201
 re-scored on 2012 gets MAE 116.57 where a model trained on the new window gets 95.48. An old
 mapping fitting worse than a new one is what P(y|X) moving looks like.
 
-**A streaming detector would not have been faster.** Calibrated on the 2011 control alone —
+**A streaming detector would not have been faster.** Calibrated on the 2011 control alone,
 the most sensitive `delta` that stays silent where any alarm is false, chosen without
-looking at 2012 — ADWIN at `delta=1e-5` raises zero false alarms and first speaks at row
+looking at 2012, ADWIN at `delta=1e-5` raises zero false alarms and first speaks at row
 1855, about 77 days in. The window monitor already here crosses its threshold between rows
 1855 and 2500. Same arrival, one fewer dependency and one fewer parameter to recalibrate per
 deployment.
 
 **The window guard was counting the wrong thing, and the fix made it earlier as well as
-quieter.** `min_window_rows` is 500 rows, 21 days, which in this data is January only —
+quieter.** `min_window_rows` is 500 rows, 21 days, which in this data is January only,
 compared against a reference spanning twelve months, so six calendar columns "drifted" for
 seasonal reasons and the monitor called a retrain that nothing justified. Cutting the
 reference to the same seasons a year earlier removes the false alarm at day 21 and brings the
@@ -86,7 +86,7 @@ real signal forward from about day 104 to day 42:
 |---|---|---|---|---|
 | 500 | 21 | Jan | **retrain**, 64% of features | *declines*, 688 comparable rows |
 | 720 | 30 | Jan | **retrain**, 55% of features | *declines*, 688 comparable rows |
-| 1000 | 42 | Jan–Feb | retrain, 55% of features | **retrain**, target moved **1.243** |
+| 1000 | 42 | Jan-Feb | retrain, 55% of features | **retrain**, target moved **1.243** |
 | 8734 | 364 | all | retrain, target 0.679 | retrain, target 0.679 |
 
 ## Run it
@@ -146,7 +146,7 @@ A feature-only monitor sleeps through a 63% rise in demand. So
 [`decide_retrain`](src/mlplatform/drift.py) fires on either signal, and checks
 the target first because that is the one that actually trips here.
 
-> The 144 → 235 figures, and therefore the 63%, are written down in prose here and in
+> The 144 to 235 figures, and therefore the 63%, are written down in prose here and in
 > [`src/mlplatform/config.py`](src/mlplatform/config.py). No script computes them and no
 > results file holds them. Read them as a description of the dataset, not as an output.
 
@@ -156,7 +156,7 @@ MAE. Those are measured on different data: the champion was scored on 2011
 (mean demand 144), the challenger on 2012 (mean 235). MAE scales with the
 magnitude of the target, so the retrained model looked *worse*, 95.48 against
 51.49, and the gate blocked the very promotion that drift had just called for.
-R² told the truth the whole time, 0.622 against 0.621, the same model quality on
+R2 told the truth the whole time, 0.622 against 0.621, the same model quality on
 a harder window. The fix is in
 [`_champion_mae_on`](src/mlplatform/train.py): load the live champion and score
 it on the challenger's own validation slice. On the same window the champion
@@ -194,7 +194,7 @@ say why. It now loads in a background thread: live immediately, not ready until
 the model arrives, which is exactly the distinction the two probes exist for.
 
 <details>
-<summary><b>Would a streaming detector have been faster — the full measurement</b></summary>
+<summary><b>Would a streaming detector have been faster, the full measurement</b></summary>
 
 The monitor here compares distributions over a window. The concept-drift
 literature does something else: it watches the model's own error one observation
@@ -204,7 +204,7 @@ it would have spoken sooner.
 
 It would not, and two of the three cannot tell drift from no drift at all.
 `python scripts/experiments/drift_latency.py` streams the 2011 champion over
-held-out 2011 — the regime it was trained on, where any alarm is a false one —
+held-out 2011, the regime it was trained on, where any alarm is a false one,
 and over 2012, and writes [`results/drift_latency.json`](results/drift_latency.json):
 
 | detector | control (2011) | 2012 |
@@ -217,8 +217,8 @@ Page-Hinkley fires at the same row whether the world moved or not. KSWIN fires
 *later* under drift than without it. Only ADWIN is directionally sensible, and
 at default settings it still raises false alarms.
 
-Calibrated on the control alone — the most sensitive setting that stays silent
-on 2011, never chosen by what it does to 2012 — ADWIN at `delta=1e-5` gives zero
+Calibrated on the control alone, the most sensitive setting that stays silent
+on 2011, never chosen by what it does to 2012, ADWIN at `delta=1e-5` gives zero
 false alarms and first speaks at row 1855, about 77 days in. The target signal
 already here crosses its threshold between rows 1855 and 2500. **The streaming
 detector arrives at the same time as the monitor that was already running**, and
@@ -238,17 +238,17 @@ reason the headline table describes. The first 500 rows are **January only**,
 against a reference spanning twelve months, so `temp`, `atemp`, `season`,
 `mnth`, `holiday` and `windspeed` all crossed their thresholds for calendar
 reasons. The 0.09 feature share quoted earlier is a full-year number; at every
-partial window it was 55–73%, falling only once the serving window came round to
+partial window it was 55 to 73%, falling only once the serving window came round to
 the same seasons as the reference.
 
 `min_window_rows` is 500, which is 21 days. The guard was right in principle and
 counting the wrong thing: no number of rows inside a single season makes that
 comparison mean what it is read to mean.
 
-The correction is to compare like with like — January against January, a year
-apart — which is the year-over-year alignment used against the same confound in
+The correction is to compare like with like, January against January, a year
+apart, which is the year-over-year alignment used against the same confound in
 seasonal churn models ([arXiv:2608.18174](https://arxiv.org/abs/2608.18174),
-reporting ROC-AUC 0.767 → 0.864 and a third fewer false alarms). This project
+reporting ROC-AUC 0.767 to 0.864 and a third fewer false alarms). This project
 already pays that method's main cost, because the reference *is* the prior year.
 
 Two things had to change together, and the order mattered.
@@ -256,14 +256,14 @@ Two things had to change together, and the order mattered.
 **A p-value runs the other way.** Evidently picks its test by how much reference
 data there is: a distance above roughly a thousand rows, a **K-S p-value** below.
 This code compared both with `score > threshold`, which for a p-value is
-backwards in both directions at once — identical data read as drifted (p = 1.0),
+backwards in both directions at once, identical data read as drifted (p = 1.0),
 and overwhelming drift read as quiet (p = 1.6e-23). It was dormant only because
 the default reference is a whole year. Aligning seasons shrinks the reference
 and would have woken it, so it is fixed first: `ColumnDrift` now knows which way
 its own test runs.
 
 **Then the guard.** The reference is cut to the seasons being served, and a
-second guard refuses to judge when too little comparable history remains —
+second guard refuses to judge when too little comparable history remains,
 because below about a thousand rows the test becomes a p-value, and a p-value at
 these sample sizes rejects differences far too small to retrain on.
 
@@ -271,7 +271,7 @@ these sample sizes rejects differences far too small to retrain on.
 |---|---|---|---|---|
 | 500 | 21 | Jan | **retrain**, 64% of features | *declines*, 688 comparable rows |
 | 720 | 30 | Jan | **retrain**, 55% of features | *declines*, 688 comparable rows |
-| 1000 | 42 | Jan–Feb | retrain, 55% of features | **retrain**, target moved **1.243** |
+| 1000 | 42 | Jan-Feb | retrain, 55% of features | **retrain**, target moved **1.243** |
 | 8734 | 364 | all | retrain, target 0.679 | retrain, target 0.679 |
 
 The false alarm at 21 days is gone, and the real signal arrives **sooner**: the
@@ -355,7 +355,7 @@ trade-off was each time.
 
 Known gaps, stated rather than hidden. The Terraform module describes a working
 deployment but has not been applied against a live project. There is no feature
-store. There is no predictive-uncertainty estimate anywhere — predictions are point
+store. There is no predictive-uncertainty estimate anywhere, predictions are point
 values. The Grafana dashboard covers service and prediction metrics, not
 per-feature distributions. Retraining is a full refit, nothing incremental. And
 the prediction log is a parquet file on a volume, which is fine for one instance
