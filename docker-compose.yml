@@ -26,13 +26,21 @@ services:
       retries: 5
 
   mlflow:
-    image: ghcr.io/mlflow/mlflow:v2.16.2
+    # Pinned to the same version as the client in pyproject.toml. The two have to
+    # match: registry.py calls log_model(name=...) and passes skops_trusted_types,
+    # both of which are MLflow 3 forms a 2.x server has no route for. This image
+    # was v2.16.2 while the client asked for >=3.0, which is a pairing that cannot
+    # work and only stayed unnoticed because nothing had run against the server.
+    image: ghcr.io/mlflow/mlflow:v3.16.1
+    # psycopg2 is not in the official image, so the postgres backend store cannot
+    # be opened without installing the driver first.
     command: >
+      bash -c "pip install --quiet psycopg2-binary &&
       mlflow server
       --host 0.0.0.0 --port 5000
       --backend-store-uri postgresql://platform:platform@postgres/platform
       --artifacts-destination /mlruns
-      --serve-artifacts
+      --serve-artifacts"
     depends_on:
       postgres:
         condition: service_healthy

@@ -18,7 +18,10 @@ dependencies = [
     "prometheus-client>=0.20",
     # MLflow 3 for registry aliases and the log_model(name=...) form. Stages,
     # which 2.x used, are deprecated and the alias is the supported route.
-    "mlflow>=3.0",
+    # Pinned rather than floating because the tracking server in
+    # docker-compose.yml is the same version, and a client newer than the server
+    # fails on exactly the MLflow 3 calls registry.py makes.
+    "mlflow==3.16.1",
     # Evidently 0.7 reshaped the API: Report/Dataset/DataDefinition, and drift
     # scores became distances rather than p-values. 0.4.x also fails to build on
     # Python 3.13, so pinning back is not an option.

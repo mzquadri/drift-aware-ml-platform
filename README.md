@@ -94,6 +94,11 @@ real signal forward from about day 104 to day 42:
 The project requires **Python 3.11 or newer** (`requires-python = ">=3.11"`); CI installs
 3.11 and ruff targets `py311`. Local, no cloud account:
 
+A transcript of this sequence actually being run, with the two runs it logged,
+the registry versions it created and the alias move, is in
+[`docs/MLFLOW_RUN.md`](docs/MLFLOW_RUN.md); the record it exports is
+[`results/mlflow_training_runs.json`](results/mlflow_training_runs.json).
+
 ```bash
 pip install -e ".[dev]"
 export MLFLOW_TRACKING_URI=sqlite:///mlflow.db   # registry without a server

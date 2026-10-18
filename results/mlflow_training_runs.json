@@ -1,0 +1,76 @@
+{
+  "generated_utc": "2026-10-18T18:18:05Z",
+  "environment": {
+    "python": "3.13.5",
+    "mlflow": "3.16.1",
+    "tracking_store": "sqlite",
+    "data_sha256": "e03de4ee4ef4dc376ac6e04bf829673c6269e8eba5c60fa121640fa2f829504f"
+  },
+  "experiment": {
+    "name": "bike-demand",
+    "id": "1"
+  },
+  "runs": [
+    {
+      "run_id": "b894916c220e460f9da96334b2f8ecd0",
+      "status": "FINISHED",
+      "params": {
+        "baseline_margin": "0.35",
+        "include_current": "False",
+        "max_depth": "14",
+        "min_samples_leaf": "2",
+        "n_estimators": "300",
+        "promotion_margin": "0.02",
+        "valid_fraction": "0.2"
+      },
+      "metrics": {
+        "baseline_mae": 98.94338214067444,
+        "valid_mae": 51.49238578795368,
+        "valid_r2": 0.6210904377796511,
+        "valid_rmse": 73.49938558096872,
+        "valid_rows": 1729.0
+      },
+      "promoted": "True",
+      "promotion_reason": "no champion registered yet, promoting the first model that clears the baseline"
+    },
+    {
+      "run_id": "f5b6a0999a874f3dbbee096f1fa934ea",
+      "status": "FINISHED",
+      "params": {
+        "baseline_margin": "0.35",
+        "include_current": "True",
+        "max_depth": "14",
+        "min_samples_leaf": "2",
+        "n_estimators": "300",
+        "promotion_margin": "0.02",
+        "valid_fraction": "0.2"
+      },
+      "metrics": {
+        "baseline_mae": 174.98460136882977,
+        "valid_mae": 95.47940870212592,
+        "valid_r2": 0.6223578632652773,
+        "valid_rmse": 135.49364051906846,
+        "valid_rows": 3476.0
+      },
+      "promoted": "True",
+      "promotion_reason": "challenger MAE 95.48 beats champion 116.57 by at least 2%"
+    }
+  ],
+  "registry": {
+    "name": "bike-demand",
+    "versions": [
+      {
+        "version": 1,
+        "run_id": "b894916c220e460f9da96334b2f8ecd0",
+        "status": "READY"
+      },
+      {
+        "version": 2,
+        "run_id": "f5b6a0999a874f3dbbee096f1fa934ea",
+        "status": "READY"
+      }
+    ],
+    "alias": "champion",
+    "alias_points_at": 2
+  }
+}
