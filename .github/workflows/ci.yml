@@ -39,6 +39,120 @@ jobs:
       - name: Tests
         run: pytest --cov --cov-report=term-missing
 
+  dags:
+    name: airflow dags import
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    # Separate from `quality` because Airflow is a large install and the rest of
+    # the suite does not need it. It exists because nothing imported a DAG
+    # before: the files were syntactically fine and still wrong, referring to a
+    # directory the CLI never wrote to.
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      # Two steps, in this order, mirroring docker/Dockerfile.airflow: Airflow
+      # under its own constraints, then the project without them.
+      #
+      # Airflow needs the constraints because without them pip backtracks
+      # through a very large dependency tree and the step stalls. The project
+      # cannot use them: it needs pandas>=2.2 and the 2.10.2 constraints pin
+      # pandas==2.1.4, so applying them to both in one command is a
+      # ResolutionImpossible. Installing the project second upgrades pandas,
+      # which core Airflow does not depend on - that bound belongs to its
+      # optional `pandas` extra, which is not installed here.
+      - name: Install Airflow under its constraints
+        run: |
+          pip install "apache-airflow==2.10.2" \
+            --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.10.2/constraints-3.11.txt"
+
+      - name: Install the project over it
+        run: pip install -e .
+
+      # Asserted rather than assumed, because the step above deliberately
+      # resolves a shared dependency against Airflow's tested pin.
+      - name: Airflow still imports, on the pandas the project needs
+        run: |
+          python -c "
+          import airflow, pandas
+          print('airflow', airflow.__version__, 'pandas', pandas.__version__)
+          assert pandas.__version__ >= '2.2'
+          "
+
+      # DagBag is what the scheduler itself uses, so an import error here is an
+      # import error in the container. `import_errors` has to be asserted
+      # explicitly: DagBag collects failures and carries on rather than raising.
+      - name: Both DAGs parse, with no import errors
+        env:
+          AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+          AIRFLOW__CORE__DAGS_FOLDER: airflow/dags
+        run: |
+          python - <<'PY'
+          from airflow.models.dagbag import DagBag
+
+          bag = DagBag(dag_folder="airflow/dags", include_examples=False)
+
+          assert not bag.import_errors, bag.import_errors
+
+          expected = {"demand_train", "demand_monitor"}
+          assert expected <= set(bag.dags), sorted(bag.dags)
+
+          train = bag.dags["demand_train"]
+          monitor = bag.dags["demand_monitor"]
+          assert {t.task_id for t in train.tasks} == {"train_and_gate", "reload_service"}
+          assert {t.task_id for t in monitor.tasks} == {
+              "measure_drift",
+              "branch_on_drift",
+              "trigger_retrain",
+              "no_action",
+          }
+          print(f"{len(expected)} DAGs parsed, no import errors")
+          PY
+
+      # The branch reads its decision file from the directory the CLI writes to.
+      # Checked against the DAG's own resolved value, because the two
+      # disagreeing is the defect this job was added for.
+      - name: The branch reads where the CLI writes
+        env:
+          ARTIFACTS_DIR: /tmp/ci-artifacts
+          AIRFLOW__CORE__DAGS_FOLDER: airflow/dags
+        run: |
+          python - <<'PY'
+          import importlib.util
+          from pathlib import Path
+
+          from mlplatform.cli import ARTIFACTS
+
+          spec = importlib.util.spec_from_file_location(
+              "demand_platform", "airflow/dags/demand_platform.py"
+          )
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+
+          assert module.ARTIFACTS == ARTIFACTS == Path("/tmp/ci-artifacts"), (
+              module.ARTIFACTS,
+              ARTIFACTS,
+          )
+
+          # With no decision file the branch must choose no_action; with a
+          # retraining one it must choose trigger_retrain. Both read the path
+          # above, so a future divergence fails here instead of silently
+          # pinning the pipeline to no_action.
+          assert module._branch_on_drift() == "no_action"
+
+          ARTIFACTS.mkdir(parents=True, exist_ok=True)
+          (ARTIFACTS / "last_drift.json").write_text('{"retrain": true}', encoding="utf-8")
+          assert module._branch_on_drift() == "trigger_retrain"
+
+          print("branch resolves the CLI's artefact directory")
+          PY
+
   image:
     name: container builds and starts
     runs-on: ubuntu-latest

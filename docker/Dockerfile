@@ -18,6 +18,12 @@ WORKDIR /app
 COPY --from=build /install /usr/local
 COPY --chown=app:app src ./src
 
+# Same reason as in Dockerfile.airflow: the `artifacts` volume is shared with
+# the Airflow container, which runs as a different uid, and a new named volume
+# takes its ownership from whichever image mounts it first. Created here too so
+# the result does not depend on container start order.
+RUN mkdir -p /app/artifacts && chmod 0777 /app/artifacts
+
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     SERVICE_HOST=0.0.0.0 \

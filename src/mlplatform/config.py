@@ -163,6 +163,16 @@ class Config:
     service: ServiceConfig = field(default_factory=ServiceConfig)
     mlflow: MLflowConfig = field(default_factory=MLflowConfig)
 
+    # Where last_training.json, last_drift.json and the Evidently report are
+    # written. Configurable because the CLI and the Airflow DAG run with
+    # different directories mounted, and they have to agree on one: the DAG used
+    # to spell /opt/airflow/artifacts itself while the CLI wrote under the
+    # project root, so the branch read a file that was never written there and
+    # demand_monitor could only ever take the no_action edge.
+    artifacts_dir: Path = field(
+        default_factory=lambda: Path(_env("ARTIFACTS_DIR", str(ROOT / "artifacts")))
+    )
+
     @property
     def feature_columns(self) -> list[str]:
         return list(self.data.numeric_features) + list(self.data.categorical_features)

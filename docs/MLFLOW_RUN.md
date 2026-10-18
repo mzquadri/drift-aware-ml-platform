@@ -78,20 +78,38 @@ What this run therefore does and does not show:
 | The `champion` alias created and then moved | Multiple clients against one shared server |
 | The promotion gate refusing and accepting on real metrics | |
 
-## What the two runs recorded
+## What the three runs recorded
 
-Both runs are in the export with their full parameter sets.
+All three are in the export with their full parameter sets. The third was run by
+Airflow rather than by hand; see [`AIRFLOW_RUN.md`](AIRFLOW_RUN.md).
 
-| | Run 1 | Run 2 (`--include-current`) |
-|---|---|---|
-| Run id | `b894916c220e460f9da96334b2f8ecd0` | `f5b6a0999a874f3dbbee096f1fa934ea` |
-| Validation rows | 1,729 | 3,476 |
-| Validation MAE | 51.49 | 95.48 |
-| Validation RMSE | 73.50 | 135.49 |
-| Validation R-squared | 0.6211 | 0.6224 |
-| Seasonal-naive baseline MAE | 98.94 | 174.98 |
-| Registry version | 1 | 2 |
-| Promoted | yes | yes |
+| | Run 1 | Run 2 (`--include-current`) | Run 3 (via Airflow) |
+|---|---|---|---|
+| Run id | `b894916c220e460f` | `f5b6a0999a874f3d` | `258a3f9fb10a47fe` |
+| Validation rows | 1,729 | 3,476 | 3,476 |
+| Validation MAE | 51.49 | 95.48 | 95.48 |
+| Validation RMSE | 73.50 | 135.49 | 135.49 |
+| Validation R-squared | 0.6211 | 0.6224 | 0.6224 |
+| Seasonal-naive baseline MAE | 98.94 | 174.98 | 174.98 |
+| Registry version | 1 | 2 | 3 |
+| Promoted | yes | yes | **no** |
+
+Run 3 is the one that shows the gate refusing. It trained on the same window as
+run 2 and scored the same 95.48 MAE, so the margin test failed:
+
+```
+promotion: challenger MAE 95.48 is not 2% better than champion 95.48
+           (needed <= 93.57)
+```
+
+**Version 3 was still registered, and the alias stayed on version 2.** That is
+the behaviour `log_run` documents - "every run is registered, so a refused
+challenger stays inspectable. Only a promoted one gets the alias moved onto it" -
+and the export shows it directly: three versions, `champion` pointing at 2.
+
+Between them the three runs exercise all three branches of the promotion
+decision: no champion yet, a challenger that clears the margin, and a challenger
+that does not.
 
 Run 1's MAE of 51.49 is the same figure `results/drift_latency.json` carries as
 `control_mae`, which is a useful cross-check: that file was produced by a

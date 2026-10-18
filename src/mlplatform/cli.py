@@ -8,11 +8,13 @@ import logging
 import sys
 from pathlib import Path
 
-from .config import CONFIG, ROOT
+from .config import CONFIG
 
 log = logging.getLogger("mlplatform")
 
-ARTIFACTS = ROOT / "artifacts"
+#: Taken from config rather than rebuilt from ROOT, so that setting ARTIFACTS_DIR
+#: moves the CLI and the Airflow DAG together instead of only one of them.
+ARTIFACTS = CONFIG.artifacts_dir
 
 
 def _setup_logging(verbose: bool) -> None:

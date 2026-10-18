@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timedelta
-from pathlib import Path
 
 from airflow import DAG
 from airflow.operators.bash import BashOperator
@@ -17,7 +16,14 @@ from airflow.operators.empty import EmptyOperator
 from airflow.operators.python import BranchPythonOperator
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 
-ARTIFACTS = Path("/opt/airflow/artifacts")
+from mlplatform.config import CONFIG
+
+# Taken from the same config the CLI reads, not spelled here. This file used to
+# hardcode /opt/airflow/artifacts while `mlplatform monitor` wrote under the
+# project root, so the branch below read a path nothing ever wrote to and
+# demand_monitor could only ever reach no_action. tests/test_artifact_paths.py
+# holds both sides to one configured directory.
+ARTIFACTS = CONFIG.artifacts_dir
 
 DEFAULT_ARGS = {
     "owner": "mzquadri",

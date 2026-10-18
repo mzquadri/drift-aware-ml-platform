@@ -8,6 +8,11 @@ x-common-env: &common-env
   MLFLOW_TRACKING_URI: http://mlflow:5000
   MODEL_NAME: bike-demand
   MODEL_STAGE: Production
+  # The `artifacts` volume is one volume mounted in two places: /app/artifacts in
+  # the service, /opt/airflow/artifacts in Airflow. These defaults are the
+  # service's side; the airflow service overrides both to its own mount point so
+  # the two containers read and write the same files.
+  ARTIFACTS_DIR: /app/artifacts
   PREDICTION_LOG: /app/artifacts/predictions.parquet
 
 services:
@@ -19,6 +24,10 @@ services:
       POSTGRES_DB: platform
     volumes:
       - postgres-data:/var/lib/postgresql/data
+      # Creates the second database Airflow needs. POSTGRES_DB makes only one,
+      # and the airflow service below asks for postgres/airflow, which did not
+      # exist until this ran.
+      - ./docker/postgres-init.sh:/docker-entrypoint-initdb.d/10-airflow-db.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U platform"]
       interval: 10s
@@ -72,8 +81,10 @@ services:
   # Fine for a single-machine demo, and honest about being that rather than
   # pretending to be a production deployment.
   airflow:
-    image: apache/airflow:2.10.2-python3.11
-    command: bash -c "pip install --user -e /opt/airflow/project && airflow standalone"
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.airflow
+    command: airflow standalone
     environment:
       <<: *common-env
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
@@ -81,6 +92,14 @@ services:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://platform:platform@postgres/airflow
       SERVICE_URL: http://service:8000
+      # Both overridden off the shared block, which spells the service's own
+      # /app paths. This container has no /app: the project is at
+      # /opt/airflow/project and the artefact volume at /opt/airflow/artifacts.
+      # Left as inherited, `mlplatform monitor --source predictions` read a
+      # prediction log under a directory that does not exist here, and the
+      # branch task read its decision file from somewhere the CLI never wrote.
+      ARTIFACTS_DIR: /opt/airflow/artifacts
+      PREDICTION_LOG: /opt/airflow/artifacts/predictions.parquet
       _AIRFLOW_WWW_USER_USERNAME: admin
       _AIRFLOW_WWW_USER_PASSWORD: admin
     depends_on:

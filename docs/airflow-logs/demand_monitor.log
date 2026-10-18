@@ -1,0 +1,64 @@
+ Container drift-aware-ml-platform-postgres-1 Running 
+ Container drift-aware-ml-platform-postgres-1 Waiting 
+ Container drift-aware-ml-platform-postgres-1 Healthy 
+ Container drift-aware-ml-platform-airflow-run-e5482b2914c8 Creating 
+ Container drift-aware-ml-platform-airflow-run-e5482b2914c8 Created 
+
+[2026-10-18T21:01:20.025+0000] {dagbag.py:588} INFO - Filling up the DagBag from /opt/airflow/dags
+[2026-10-18T21:01:22.971+0000] {dag.py:4435} INFO - dagrun id: demand_monitor
+[2026-10-18T21:01:23.324+0000] {dag.py:4451} INFO - created dagrun <DagRun demand_monitor @ 2026-10-17 00:00:00+00:00: manual__2026-10-17T00:00:00+00:00, state:running, queued_at: None. externally triggered: False>
+[2026-10-18T21:01:23.683+0000] {dag.py:4396} INFO - [DAG TEST] starting task_id=measure_drift map_index=-1
+[2026-10-18T21:01:23.691+0000] {dag.py:4399} INFO - [DAG TEST] running task <TaskInstance: demand_monitor.measure_drift manual__2026-10-17T00:00:00+00:00 [scheduled]>
+[2026-10-18 21:01:57,326] {taskinstance.py:3131} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='mzquadri' AIRFLOW_CTX_DAG_ID='demand_monitor' AIRFLOW_CTX_TASK_ID='measure_drift' AIRFLOW_CTX_EXECUTION_DATE='2026-10-17T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-10-17T00:00:00+00:00'
+[2026-10-18T21:01:57.326+0000] {taskinstance.py:3131} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='mzquadri' AIRFLOW_CTX_DAG_ID='demand_monitor' AIRFLOW_CTX_TASK_ID='measure_drift' AIRFLOW_CTX_EXECUTION_DATE='2026-10-17T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-10-17T00:00:00+00:00'
+[2026-10-18T21:01:57.468+0000] {taskinstance.py:731} INFO - ::endgroup::
+[2026-10-18 21:01:57,831] {subprocess.py:63} INFO - Tmp dir root location: /tmp
+[2026-10-18T21:01:57.831+0000] {subprocess.py:63} INFO - Tmp dir root location: /tmp
+[2026-10-18 21:01:57,852] {subprocess.py:75} INFO - Running command: ['/usr/bin/bash', '-c', 'mlplatform monitor --source predictions']
+[2026-10-18T21:01:57.852+0000] {subprocess.py:75} INFO - Running command: ['/usr/bin/bash', '-c', 'mlplatform monitor --source predictions']
+[2026-10-18 21:01:59,182] {subprocess.py:86} INFO - Output:
+[2026-10-18T21:01:59.182+0000] {subprocess.py:86} INFO - Output:
+[2026-10-18 21:02:52,804] {subprocess.py:93} INFO - 2026-10-18 21:02:52,753 INFO    mlplatform  reference narrowed to 4250 of 8645 rows covering the 6 month(s) being served
+[2026-10-18T21:02:52.804+0000] {subprocess.py:93} INFO - 2026-10-18 21:02:52,753 INFO    mlplatform  reference narrowed to 4250 of 8645 rows covering the 6 month(s) being served
+[2026-10-18 21:04:19,172] {subprocess.py:93} INFO - 2026-10-18 21:04:19,133 INFO    mlplatform  report written to /opt/airflow/artifacts/drift_report.html
+[2026-10-18T21:04:19.172+0000] {subprocess.py:93} INFO - 2026-10-18 21:04:19,133 INFO    mlplatform  report written to /opt/airflow/artifacts/drift_report.html
+[2026-10-18 21:04:19,225] {subprocess.py:93} INFO - {
+[2026-10-18T21:04:19.225+0000] {subprocess.py:93} INFO - {
+[2026-10-18 21:04:19,228] {subprocess.py:93} INFO -   "retrain": true,
+[2026-10-18T21:04:19.228+0000] {subprocess.py:93} INFO -   "retrain": true,
+[2026-10-18 21:04:19,231] {subprocess.py:93} INFO -   "reason": "target 'cnt' drifted 0.406 by Wasserstein distance (normed), over the 0.2 threshold, while only 45% of features moved; the relationship the model learned no longer holds"
+[2026-10-18T21:04:19.231+0000] {subprocess.py:93} INFO -   "reason": "target 'cnt' drifted 0.406 by Wasserstein distance (normed), over the 0.2 threshold, while only 45% of features moved; the relationship the model learned no longer holds"
+[2026-10-18 21:04:19,234] {subprocess.py:93} INFO - }
+[2026-10-18T21:04:19.234+0000] {subprocess.py:93} INFO - }
+[2026-10-18 21:04:25,819] {subprocess.py:97} INFO - Command exited with return code 0
+[2026-10-18T21:04:25.819+0000] {subprocess.py:97} INFO - Command exited with return code 0
+[2026-10-18T21:04:26.524+0000] {taskinstance.py:340} INFO - ::group::Post task execution logs
+[2026-10-18T21:04:26.541+0000] {taskinstance.py:352} INFO - Marking task as SUCCESS. dag_id=demand_monitor, task_id=measure_drift, run_id=manual__2026-10-17T00:00:00+00:00, execution_date=20261017T000000, start_date=, end_date=20261018T210426
+[2026-10-18T21:04:26.733+0000] {dag.py:4410} INFO - [DAG TEST] end task task_id=measure_drift map_index=-1
+[2026-10-18T21:04:26.930+0000] {dag.py:4396} INFO - [DAG TEST] starting task_id=branch_on_drift map_index=-1
+[2026-10-18T21:04:26.931+0000] {dag.py:4399} INFO - [DAG TEST] running task <TaskInstance: demand_monitor.branch_on_drift manual__2026-10-17T00:00:00+00:00 [scheduled]>
+[2026-10-18 21:04:27,604] {taskinstance.py:3131} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='mzquadri' AIRFLOW_CTX_DAG_ID='demand_monitor' AIRFLOW_CTX_TASK_ID='branch_on_drift' AIRFLOW_CTX_EXECUTION_DATE='2026-10-17T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-10-17T00:00:00+00:00'
+[2026-10-18T21:04:27.604+0000] {taskinstance.py:3131} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='mzquadri' AIRFLOW_CTX_DAG_ID='demand_monitor' AIRFLOW_CTX_TASK_ID='branch_on_drift' AIRFLOW_CTX_EXECUTION_DATE='2026-10-17T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-10-17T00:00:00+00:00'
+[2026-10-18T21:04:27.630+0000] {taskinstance.py:731} INFO - ::endgroup::
+[2026-10-18 21:04:27,642] {baseoperator.py:405} WARNING - BranchPythonOperator.execute cannot be called outside TaskInstance!
+[2026-10-18T21:04:27.642+0000] {baseoperator.py:405} WARNING - BranchPythonOperator.execute cannot be called outside TaskInstance!
+[2026-10-18 21:04:27,680] {python.py:240} INFO - Done. Returned value was: trigger_retrain
+[2026-10-18T21:04:27.680+0000] {python.py:240} INFO - Done. Returned value was: trigger_retrain
+[2026-10-18 21:04:27,681] {branch.py:38} INFO - Branch into trigger_retrain
+[2026-10-18T21:04:27.681+0000] {branch.py:38} INFO - Branch into trigger_retrain
+[2026-10-18T21:04:27.689+0000] {skipmixin.py:230} INFO - Following branch {'trigger_retrain'}
+[2026-10-18T21:04:27.771+0000] {skipmixin.py:278} INFO - Skipping tasks [('no_action', -1)]
+[2026-10-18T21:04:27.943+0000] {taskinstance.py:340} INFO - ::group::Post task execution logs
+[2026-10-18T21:04:27.945+0000] {taskinstance.py:352} INFO - Marking task as SUCCESS. dag_id=demand_monitor, task_id=branch_on_drift, run_id=manual__2026-10-17T00:00:00+00:00, execution_date=20261017T000000, start_date=, end_date=20261018T210427
+[2026-10-18T21:04:27.997+0000] {dag.py:4410} INFO - [DAG TEST] end task task_id=branch_on_drift map_index=-1
+[2026-10-18T21:04:28.128+0000] {dag.py:4396} INFO - [DAG TEST] starting task_id=trigger_retrain map_index=-1
+[2026-10-18T21:04:28.130+0000] {dag.py:4399} INFO - [DAG TEST] running task <TaskInstance: demand_monitor.trigger_retrain manual__2026-10-17T00:00:00+00:00 [scheduled]>
+[2026-10-18 21:04:28,262] {taskinstance.py:3131} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='mzquadri' AIRFLOW_CTX_DAG_ID='demand_monitor' AIRFLOW_CTX_TASK_ID='trigger_retrain' AIRFLOW_CTX_EXECUTION_DATE='2026-10-17T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-10-17T00:00:00+00:00'
+[2026-10-18T21:04:28.262+0000] {taskinstance.py:3131} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='mzquadri' AIRFLOW_CTX_DAG_ID='demand_monitor' AIRFLOW_CTX_TASK_ID='trigger_retrain' AIRFLOW_CTX_EXECUTION_DATE='2026-10-17T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-10-17T00:00:00+00:00'
+[2026-10-18T21:04:28.268+0000] {taskinstance.py:731} INFO - ::endgroup::
+[2026-10-18T21:04:28.631+0000] {taskinstance.py:340} INFO - ::group::Post task execution logs
+[2026-10-18T21:04:28.634+0000] {taskinstance.py:352} INFO - Marking task as SUCCESS. dag_id=demand_monitor, task_id=trigger_retrain, run_id=manual__2026-10-17T00:00:00+00:00, execution_date=20261017T000000, start_date=, end_date=20261018T210428
+[2026-10-18T21:04:28.653+0000] {dag.py:4410} INFO - [DAG TEST] end task task_id=trigger_retrain map_index=-1
+[2026-10-18T21:04:28.663+0000] {dagrun.py:854} INFO - Marking run <DagRun demand_monitor @ 2026-10-17 00:00:00+00:00: manual__2026-10-17T00:00:00+00:00, state:running, queued_at: None. externally triggered: False> successful
+[2026-10-18T21:04:28.666+0000] {dagrun.py:905} INFO - DagRun Finished: dag_id=demand_monitor, execution_date=2026-10-17 00:00:00+00:00, run_id=manual__2026-10-17T00:00:00+00:00, run_start_date=2026-10-17 00:00:00+00:00, run_end_date=2026-10-18 21:04:28.665488+00:00, run_duration=162268.665488, state=success, external_trigger=False, run_type=manual, data_interval_start=2026-10-15 03:00:00+00:00, data_interval_end=2026-10-16 03:00:00+00:00, dag_hash=None
+EXIT=0

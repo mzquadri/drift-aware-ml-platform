@@ -33,6 +33,27 @@ dev = ["pytest>=8.3", "pytest-cov>=5.0", "httpx>=0.27", "ruff>=0.6"]
 # Only scripts/experiments needs these. The service and the test suite do not,
 # so a deployment does not carry a streaming-detector library it never calls.
 experiments = ["river>=0.21"]
+# Airflow is what runs the DAGs in airflow/dags, and it was previously declared
+# nowhere: not here, not in a requirements file, and no CI job imported a DAG.
+# That is why two path defects in airflow/dags/demand_platform.py and
+# docker-compose.yml went unnoticed. Its own group because neither the service
+# nor the test suite imports it, and it is a large install.
+#
+# Pinned to the minor the compose image runs (apache/airflow:2.10.2-python3.11)
+# so a DAG that imports here is a DAG that imports there.
+#
+# This extra needs Python < 3.13; 2.10.2 declares Requires-Python >=3.8,<3.13.
+# The rest of the project runs on 3.13, so the ceiling is deliberately not put
+# on `requires-python`. Installing this extra on 3.13 fails with pip saying so,
+# which is wanted: an environment marker would quietly resolve to nothing and
+# leave a DAG-less install looking successful.
+#
+# Installing it in one command with Airflow's constraints file does not work:
+# those pin pandas==2.1.4 and this project needs pandas>=2.2. Install Airflow
+# under its constraints first and the project after, as docker/Dockerfile.airflow
+# and the `dags` CI job both do. Core Airflow does not depend on pandas, so the
+# upgrade is safe; the bound is on its optional `pandas` extra.
+airflow = ["apache-airflow==2.10.2"]
 
 [project.scripts]
 mlplatform = "mlplatform.cli:main"

@@ -1,0 +1,57 @@
+# Airflow with the project installed at build time.
+#
+# The compose service used to run
+#   bash -c "pip install --user -e /opt/airflow/project && airflow standalone"
+# which reinstalls the project on every container start, needs the network every
+# time, and leaves the installed versions depending on when the container last
+# booted rather than on anything recorded. Doing it here means the install
+# happens once, is layer-cached, and is identical on every start.
+FROM apache/airflow:2.10.2-python3.11
+
+ENV PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Only the metadata and the package, not the whole tree: the DAGs and the
+# artefact directory arrive as compose mounts, so copying them in would mean two
+# copies of the same files and the mounted one silently winning.
+COPY --chown=airflow:root pyproject.toml README.md /opt/airflow/project/
+COPY --chown=airflow:root src /opt/airflow/project/src
+
+# Installed WITHOUT Airflow's constraints file, which is a deliberate choice and
+# not an oversight.
+#
+# Applying it fails outright: this project needs pandas>=2.2 and the
+# constraints for 2.10.2 pin pandas==2.1.4, so pip reports ResolutionImpossible.
+# Letting the project's requirement win upgrades the pandas that the base image
+# ships (2.1.4), which is safe here for a reason worth recording:
+#
+#   $ pip show apache-airflow -> 2.10.2
+#   pandas requirement lines: ["pandas>=1.2.5,<2.2; extra == 'pandas'",
+#                              "pandas>=1.2.5,<2.2; extra == 'devel-ci'"]
+#
+# Core Airflow does not depend on pandas at all. The bound above belongs to the
+# optional `pandas` and `devel-ci` extras, neither of which this image
+# installs, and the two DAGs use only Bash, Branch, Empty and TriggerDagRun
+# operators, none of which touch pandas.
+#
+# So the shared dependency is resolved in the project's favour knowingly. If a
+# provider that does use pandas is ever added, this is the line that has to be
+# reconsidered, and the choice is to pin Airflow forward rather than pandas
+# back, because the training code is what pandas>=2.2 is actually needed for.
+RUN pip install --no-cache-dir -e /opt/airflow/project
+
+# Create the artefact directory in the image, world-writable, before the named
+# volume is mounted over it.
+#
+# Docker initialises a new named volume from whatever the image has at the mount
+# point, ownership included. The base image has no /opt/airflow/artifacts, so
+# the volume was being created root:root 0755 while this container runs as uid
+# 50000 - `mplatform monitor` could not write last_drift.json and the
+# measure_drift task failed on permissions, not on anything to do with drift.
+#
+# 0777 rather than chown to airflow because the `artifacts` volume is shared
+# with the service container, which runs as a different user (uid 10001). One
+# volume, two images, two uids: making it writable by both is the simplest
+# correct answer for a single-machine compose stack. It is not a pattern to
+# carry into a real deployment, where the two would get their own volumes or a
+# shared group.
+RUN mkdir -p /opt/airflow/artifacts && chmod 0777 /opt/airflow/artifacts

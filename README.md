@@ -121,6 +121,13 @@ Full stack with MLflow, Airflow, Prometheus and Grafana:
 docker compose up --build
 ```
 
+The two DAGs in `airflow/dags/` have been run, and
+[`docs/AIRFLOW_RUN.md`](docs/AIRFLOW_RUN.md) is the transcript. Doing so found
+three defects that only exist at run time, the worst of which meant
+`demand_monitor` could never have triggered a retrain: the branch read a
+decision file from a directory the CLI never wrote to, so it took `no_action`
+every time with every task green.
+
 | Service | URL |
 |---|---|
 | Prediction API | http://localhost:8000/docs |

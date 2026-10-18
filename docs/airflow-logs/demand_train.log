@@ -1,0 +1,202 @@
+ Container drift-aware-ml-platform-postgres-1 Running 
+ Container drift-aware-ml-platform-postgres-1 Waiting 
+ Container drift-aware-ml-platform-postgres-1 Healthy 
+ Container drift-aware-ml-platform-airflow-run-1285eaa98ca8 Creating 
+ Container drift-aware-ml-platform-airflow-run-1285eaa98ca8 Created 
+
+[2026-10-18T21:12:01.825+0000] {dagbag.py:588} INFO - Filling up the DagBag from /opt/airflow/dags
+[2026-10-18T21:12:04.558+0000] {dag.py:4435} INFO - dagrun id: demand_train
+[2026-10-18T21:12:05.538+0000] {dag.py:4451} INFO - created dagrun <DagRun demand_train @ 2026-10-17 00:00:00+00:00: manual__2026-10-17T00:00:00+00:00, state:running, queued_at: None. externally triggered: False>
+[2026-10-18T21:12:06.517+0000] {dag.py:4396} INFO - [DAG TEST] starting task_id=train_and_gate map_index=-1
+[2026-10-18T21:12:06.536+0000] {dag.py:4399} INFO - [DAG TEST] running task <TaskInstance: demand_train.train_and_gate manual__2026-10-17T00:00:00+00:00 [scheduled]>
+[2026-10-18 21:12:28,474] {taskinstance.py:3131} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='mzquadri' AIRFLOW_CTX_DAG_ID='demand_train' AIRFLOW_CTX_TASK_ID='train_and_gate' AIRFLOW_CTX_EXECUTION_DATE='2026-10-17T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-10-17T00:00:00+00:00'
+[2026-10-18T21:12:28.474+0000] {taskinstance.py:3131} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='mzquadri' AIRFLOW_CTX_DAG_ID='demand_train' AIRFLOW_CTX_TASK_ID='train_and_gate' AIRFLOW_CTX_EXECUTION_DATE='2026-10-17T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-10-17T00:00:00+00:00'
+[2026-10-18T21:12:28.757+0000] {taskinstance.py:731} INFO - ::endgroup::
+[2026-10-18 21:12:29,359] {subprocess.py:63} INFO - Tmp dir root location: /tmp
+[2026-10-18T21:12:29.359+0000] {subprocess.py:63} INFO - Tmp dir root location: /tmp
+[2026-10-18 21:12:29,396] {subprocess.py:75} INFO - Running command: ['/usr/bin/bash', '-c', 'mlplatform train --include-current']
+[2026-10-18T21:12:29.396+0000] {subprocess.py:75} INFO - Running command: ['/usr/bin/bash', '-c', 'mlplatform train --include-current']
+[2026-10-18 21:12:30,941] {subprocess.py:86} INFO - Output:
+[2026-10-18T21:12:30.941+0000] {subprocess.py:86} INFO - Output:
+[2026-10-18 21:13:06,226] {subprocess.py:93} INFO - 2026-10-18 21:13:06,177 INFO    mlplatform  training on reference + current (17379 rows)
+[2026-10-18T21:13:06.226+0000] {subprocess.py:93} INFO - 2026-10-18 21:13:06,177 INFO    mlplatform  training on reference + current (17379 rows)
+[2026-10-18 21:13:48,031] {subprocess.py:93} INFO - /home/airflow/.local/lib/python3.11/site-packages/pydantic/_internal/_fields.py:132: UserWarning: Field "model_name" in PromptModelConfig has conflict with protected namespace "model_".
+[2026-10-18T21:13:48.031+0000] {subprocess.py:93} INFO - /home/airflow/.local/lib/python3.11/site-packages/pydantic/_internal/_fields.py:132: UserWarning: Field "model_name" in PromptModelConfig has conflict with protected namespace "model_".
+[2026-10-18 21:13:48,101] {subprocess.py:93} INFO - 
+[2026-10-18T21:13:48.101+0000] {subprocess.py:93} INFO - 
+[2026-10-18 21:13:48,104] {subprocess.py:93} INFO - You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+[2026-10-18T21:13:48.104+0000] {subprocess.py:93} INFO - You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+[2026-10-18 21:13:48,106] {subprocess.py:93} INFO -   warnings.warn(
+[2026-10-18T21:13:48.106+0000] {subprocess.py:93} INFO -   warnings.warn(
+[2026-10-18 21:14:58,812] {subprocess.py:93} INFO - 2026-10-18 21:14:58,727 INFO    mlplatform.train  champion not loadable (No such artifact: ''), falling back to its stored metric
+[2026-10-18T21:14:58.812+0000] {subprocess.py:93} INFO - 2026-10-18 21:14:58,727 INFO    mlplatform.train  champion not loadable (No such artifact: ''), falling back to its stored metric
+[2026-10-18 21:14:59,223] {subprocess.py:93} INFO - 2026-10-18 21:14:59,222 INFO    mlplatform.train  validation {'mae': 95.47940870212592, 'rmse': 135.49364051906846, 'r2': 0.6223578632652773, 'n_rows': 3476}
+[2026-10-18T21:14:59.223+0000] {subprocess.py:93} INFO - 2026-10-18 21:14:59,222 INFO    mlplatform.train  validation {'mae': 95.47940870212592, 'rmse': 135.49364051906846, 'r2': 0.6223578632652773, 'n_rows': 3476}
+[2026-10-18 21:14:59,231] {subprocess.py:93} INFO - 2026-10-18 21:14:59,223 INFO    mlplatform.train  promotion: challenger MAE 95.48 is not 2% better than champion 95.48 (needed <= 93.57)
+[2026-10-18T21:14:59.231+0000] {subprocess.py:93} INFO - 2026-10-18 21:14:59,223 INFO    mlplatform.train  promotion: challenger MAE 95.48 is not 2% better than champion 95.48 (needed <= 93.57)
+[2026-10-18 21:15:02,258] {subprocess.py:93} INFO - 2026/10/18 21:15:02 WARNING mlflow.utils.git_utils: Failed to import Git (the Git executable is probably not on your PATH), so Git SHA is not available. Error: Failed to initialize: Bad git executable.
+[2026-10-18T21:15:02.258+0000] {subprocess.py:93} INFO - 2026/10/18 21:15:02 WARNING mlflow.utils.git_utils: Failed to import Git (the Git executable is probably not on your PATH), so Git SHA is not available. Error: Failed to initialize: Bad git executable.
+[2026-10-18 21:15:02,325] {subprocess.py:93} INFO - The git executable must be specified in one of the following ways:
+[2026-10-18T21:15:02.325+0000] {subprocess.py:93} INFO - The git executable must be specified in one of the following ways:
+[2026-10-18 21:15:02,332] {subprocess.py:93} INFO -     - be included in your $PATH
+[2026-10-18T21:15:02.332+0000] {subprocess.py:93} INFO -     - be included in your $PATH
+[2026-10-18 21:15:02,333] {subprocess.py:93} INFO -     - be set via $GIT_PYTHON_GIT_EXECUTABLE
+[2026-10-18T21:15:02.333+0000] {subprocess.py:93} INFO -     - be set via $GIT_PYTHON_GIT_EXECUTABLE
+[2026-10-18 21:15:02,334] {subprocess.py:93} INFO -     - explicitly set via git.refresh(<full-path-to-git-executable>)
+[2026-10-18T21:15:02.334+0000] {subprocess.py:93} INFO -     - explicitly set via git.refresh(<full-path-to-git-executable>)
+[2026-10-18 21:15:02,335] {subprocess.py:93} INFO - 
+[2026-10-18T21:15:02.335+0000] {subprocess.py:93} INFO - 
+[2026-10-18 21:15:02,336] {subprocess.py:93} INFO - All git commands will error until this is rectified.
+[2026-10-18T21:15:02.336+0000] {subprocess.py:93} INFO - All git commands will error until this is rectified.
+[2026-10-18 21:15:02,337] {subprocess.py:93} INFO - 
+[2026-10-18T21:15:02.337+0000] {subprocess.py:93} INFO - 
+[2026-10-18 21:15:02,338] {subprocess.py:93} INFO - This initial message can be silenced or aggravated in the future by setting the
+[2026-10-18T21:15:02.338+0000] {subprocess.py:93} INFO - This initial message can be silenced or aggravated in the future by setting the
+[2026-10-18 21:15:02,347] {subprocess.py:93} INFO - $GIT_PYTHON_REFRESH environment variable. Use one of the following values:
+[2026-10-18T21:15:02.347+0000] {subprocess.py:93} INFO - $GIT_PYTHON_REFRESH environment variable. Use one of the following values:
+[2026-10-18 21:15:02,348] {subprocess.py:93} INFO -     - quiet|q|silence|s|silent|none|n|0: for no message or exception
+[2026-10-18T21:15:02.348+0000] {subprocess.py:93} INFO -     - quiet|q|silence|s|silent|none|n|0: for no message or exception
+[2026-10-18 21:15:02,349] {subprocess.py:93} INFO -     - warn|w|warning|log|l|1: for a warning message (logging level CRITICAL, displayed by default)
+[2026-10-18T21:15:02.349+0000] {subprocess.py:93} INFO -     - warn|w|warning|log|l|1: for a warning message (logging level CRITICAL, displayed by default)
+[2026-10-18 21:15:02,350] {subprocess.py:93} INFO -     - error|e|exception|raise|r|2: for a raised exception
+[2026-10-18T21:15:02.350+0000] {subprocess.py:93} INFO -     - error|e|exception|raise|r|2: for a raised exception
+[2026-10-18 21:15:02,351] {subprocess.py:93} INFO - 
+[2026-10-18T21:15:02.351+0000] {subprocess.py:93} INFO - 
+[2026-10-18 21:15:02,352] {subprocess.py:93} INFO - Example:
+[2026-10-18T21:15:02.352+0000] {subprocess.py:93} INFO - Example:
+[2026-10-18 21:15:02,359] {subprocess.py:93} INFO -     export GIT_PYTHON_REFRESH=quiet
+[2026-10-18T21:15:02.359+0000] {subprocess.py:93} INFO -     export GIT_PYTHON_REFRESH=quiet
+[2026-10-18 21:15:02,363] {subprocess.py:93} INFO - 
+[2026-10-18T21:15:02.363+0000] {subprocess.py:93} INFO - 
+[2026-10-18 21:15:02,369] {subprocess.py:93} INFO - 2026/10/18 21:15:02 WARNING mlflow.utils.git_utils: Failed to import Git (the Git executable is probably not on your PATH), so Git branch is not available. Error: Failed to initialize: Bad git executable.
+[2026-10-18T21:15:02.369+0000] {subprocess.py:93} INFO - 2026/10/18 21:15:02 WARNING mlflow.utils.git_utils: Failed to import Git (the Git executable is probably not on your PATH), so Git branch is not available. Error: Failed to initialize: Bad git executable.
+[2026-10-18 21:15:02,371] {subprocess.py:93} INFO - The git executable must be specified in one of the following ways:
+[2026-10-18T21:15:02.371+0000] {subprocess.py:93} INFO - The git executable must be specified in one of the following ways:
+[2026-10-18 21:15:02,374] {subprocess.py:93} INFO -     - be included in your $PATH
+[2026-10-18T21:15:02.374+0000] {subprocess.py:93} INFO -     - be included in your $PATH
+[2026-10-18 21:15:02,376] {subprocess.py:93} INFO -     - be set via $GIT_PYTHON_GIT_EXECUTABLE
+[2026-10-18T21:15:02.376+0000] {subprocess.py:93} INFO -     - be set via $GIT_PYTHON_GIT_EXECUTABLE
+[2026-10-18 21:15:02,379] {subprocess.py:93} INFO -     - explicitly set via git.refresh(<full-path-to-git-executable>)
+[2026-10-18T21:15:02.379+0000] {subprocess.py:93} INFO -     - explicitly set via git.refresh(<full-path-to-git-executable>)
+[2026-10-18 21:15:02,381] {subprocess.py:93} INFO - 
+[2026-10-18T21:15:02.381+0000] {subprocess.py:93} INFO - 
+[2026-10-18 21:15:02,383] {subprocess.py:93} INFO - All git commands will error until this is rectified.
+[2026-10-18T21:15:02.383+0000] {subprocess.py:93} INFO - All git commands will error until this is rectified.
+[2026-10-18 21:15:02,385] {subprocess.py:93} INFO - 
+[2026-10-18T21:15:02.385+0000] {subprocess.py:93} INFO - 
+[2026-10-18 21:15:02,388] {subprocess.py:93} INFO - This initial message can be silenced or aggravated in the future by setting the
+[2026-10-18T21:15:02.388+0000] {subprocess.py:93} INFO - This initial message can be silenced or aggravated in the future by setting the
+[2026-10-18 21:15:02,392] {subprocess.py:93} INFO - $GIT_PYTHON_REFRESH environment variable. Use one of the following values:
+[2026-10-18T21:15:02.392+0000] {subprocess.py:93} INFO - $GIT_PYTHON_REFRESH environment variable. Use one of the following values:
+[2026-10-18 21:15:02,394] {subprocess.py:93} INFO -     - quiet|q|silence|s|silent|none|n|0: for no message or exception
+[2026-10-18T21:15:02.394+0000] {subprocess.py:93} INFO -     - quiet|q|silence|s|silent|none|n|0: for no message or exception
+[2026-10-18 21:15:02,394] {subprocess.py:93} INFO -     - warn|w|warning|log|l|1: for a warning message (logging level CRITICAL, displayed by default)
+[2026-10-18T21:15:02.394+0000] {subprocess.py:93} INFO -     - warn|w|warning|log|l|1: for a warning message (logging level CRITICAL, displayed by default)
+[2026-10-18 21:15:02,395] {subprocess.py:93} INFO -     - error|e|exception|raise|r|2: for a raised exception
+[2026-10-18T21:15:02.395+0000] {subprocess.py:93} INFO -     - error|e|exception|raise|r|2: for a raised exception
+[2026-10-18 21:15:02,397] {subprocess.py:93} INFO - 
+[2026-10-18T21:15:02.397+0000] {subprocess.py:93} INFO - 
+[2026-10-18 21:15:02,397] {subprocess.py:93} INFO - Example:
+[2026-10-18T21:15:02.397+0000] {subprocess.py:93} INFO - Example:
+[2026-10-18 21:15:02,398] {subprocess.py:93} INFO -     export GIT_PYTHON_REFRESH=quiet
+[2026-10-18T21:15:02.398+0000] {subprocess.py:93} INFO -     export GIT_PYTHON_REFRESH=quiet
+[2026-10-18 21:15:02,400] {subprocess.py:93} INFO - 
+[2026-10-18T21:15:02.400+0000] {subprocess.py:93} INFO - 
+[2026-10-18 21:15:02,402] {subprocess.py:93} INFO - 2026/10/18 21:15:02 WARNING mlflow.utils.git_utils: Failed to import Git (the Git executable is probably not on your PATH), so Git repository URL is not available. Error: Failed to initialize: Bad git executable.
+[2026-10-18T21:15:02.402+0000] {subprocess.py:93} INFO - 2026/10/18 21:15:02 WARNING mlflow.utils.git_utils: Failed to import Git (the Git executable is probably not on your PATH), so Git repository URL is not available. Error: Failed to initialize: Bad git executable.
+[2026-10-18 21:15:02,412] {subprocess.py:93} INFO - The git executable must be specified in one of the following ways:
+[2026-10-18T21:15:02.412+0000] {subprocess.py:93} INFO - The git executable must be specified in one of the following ways:
+[2026-10-18 21:15:02,428] {subprocess.py:93} INFO -     - be included in your $PATH
+[2026-10-18T21:15:02.428+0000] {subprocess.py:93} INFO -     - be included in your $PATH
+[2026-10-18 21:15:02,430] {subprocess.py:93} INFO -     - be set via $GIT_PYTHON_GIT_EXECUTABLE
+[2026-10-18T21:15:02.430+0000] {subprocess.py:93} INFO -     - be set via $GIT_PYTHON_GIT_EXECUTABLE
+[2026-10-18 21:15:02,431] {subprocess.py:93} INFO -     - explicitly set via git.refresh(<full-path-to-git-executable>)
+[2026-10-18T21:15:02.431+0000] {subprocess.py:93} INFO -     - explicitly set via git.refresh(<full-path-to-git-executable>)
+[2026-10-18 21:15:02,432] {subprocess.py:93} INFO - 
+[2026-10-18T21:15:02.432+0000] {subprocess.py:93} INFO - 
+[2026-10-18 21:15:02,433] {subprocess.py:93} INFO - All git commands will error until this is rectified.
+[2026-10-18T21:15:02.433+0000] {subprocess.py:93} INFO - All git commands will error until this is rectified.
+[2026-10-18 21:15:02,434] {subprocess.py:93} INFO - 
+[2026-10-18T21:15:02.434+0000] {subprocess.py:93} INFO - 
+[2026-10-18 21:15:02,437] {subprocess.py:93} INFO - This initial message can be silenced or aggravated in the future by setting the
+[2026-10-18T21:15:02.437+0000] {subprocess.py:93} INFO - This initial message can be silenced or aggravated in the future by setting the
+[2026-10-18 21:15:02,438] {subprocess.py:93} INFO - $GIT_PYTHON_REFRESH environment variable. Use one of the following values:
+[2026-10-18T21:15:02.438+0000] {subprocess.py:93} INFO - $GIT_PYTHON_REFRESH environment variable. Use one of the following values:
+[2026-10-18 21:15:02,439] {subprocess.py:93} INFO -     - quiet|q|silence|s|silent|none|n|0: for no message or exception
+[2026-10-18T21:15:02.439+0000] {subprocess.py:93} INFO -     - quiet|q|silence|s|silent|none|n|0: for no message or exception
+[2026-10-18 21:15:02,440] {subprocess.py:93} INFO -     - warn|w|warning|log|l|1: for a warning message (logging level CRITICAL, displayed by default)
+[2026-10-18T21:15:02.440+0000] {subprocess.py:93} INFO -     - warn|w|warning|log|l|1: for a warning message (logging level CRITICAL, displayed by default)
+[2026-10-18 21:15:02,448] {subprocess.py:93} INFO -     - error|e|exception|raise|r|2: for a raised exception
+[2026-10-18T21:15:02.448+0000] {subprocess.py:93} INFO -     - error|e|exception|raise|r|2: for a raised exception
+[2026-10-18 21:15:02,449] {subprocess.py:93} INFO - 
+[2026-10-18T21:15:02.449+0000] {subprocess.py:93} INFO - 
+[2026-10-18 21:15:02,450] {subprocess.py:93} INFO - Example:
+[2026-10-18T21:15:02.450+0000] {subprocess.py:93} INFO - Example:
+[2026-10-18 21:15:02,452] {subprocess.py:93} INFO -     export GIT_PYTHON_REFRESH=quiet
+[2026-10-18T21:15:02.452+0000] {subprocess.py:93} INFO -     export GIT_PYTHON_REFRESH=quiet
+[2026-10-18 21:15:02,453] {subprocess.py:93} INFO - 
+[2026-10-18T21:15:02.453+0000] {subprocess.py:93} INFO - 
+[2026-10-18 21:15:06,449] {subprocess.py:93} INFO - /home/airflow/.local/lib/python3.11/site-packages/mlflow/types/utils.py:440: UserWarning: Hint: Inferred schema contains integer column(s). Integer columns in Python cannot represent missing values. If your input data contains missing values at inference time, it will be encoded as floats and will cause a schema enforcement error. The best way to avoid this problem is to infer the model schema based on a realistic data sample (training dataset) that includes missing values. Alternatively, you can declare integer columns as doubles (float64) whenever these columns may have missing values. See `Handling Integers With Missing Values <https://www.mlflow.org/docs/latest/models.html#handling-integers-with-missing-values>`_ for more details.
+[2026-10-18T21:15:06.449+0000] {subprocess.py:93} INFO - /home/airflow/.local/lib/python3.11/site-packages/mlflow/types/utils.py:440: UserWarning: Hint: Inferred schema contains integer column(s). Integer columns in Python cannot represent missing values. If your input data contains missing values at inference time, it will be encoded as floats and will cause a schema enforcement error. The best way to avoid this problem is to infer the model schema based on a realistic data sample (training dataset) that includes missing values. Alternatively, you can declare integer columns as doubles (float64) whenever these columns may have missing values. See `Handling Integers With Missing Values <https://www.mlflow.org/docs/latest/models.html#handling-integers-with-missing-values>`_ for more details.
+[2026-10-18 21:15:06,534] {subprocess.py:93} INFO -   warnings.warn(
+[2026-10-18T21:15:06.534+0000] {subprocess.py:93} INFO -   warnings.warn(
+[2026-10-18 21:20:06,641] {subprocess.py:93} INFO - 2026/10/18 21:20:06 WARNING mlflow.utils.environment: Encountered an unexpected error while inferring pip requirements (model URI: /tmp/tmpd5zgoyo8/model/model.skops, flavor: sklearn). Fall back to return ['scikit-learn==1.9.1', 'skops==0.16.0']. Set logging level to DEBUG to see the full traceback.
+[2026-10-18T21:20:06.641+0000] {subprocess.py:93} INFO - 2026/10/18 21:20:06 WARNING mlflow.utils.environment: Encountered an unexpected error while inferring pip requirements (model URI: /tmp/tmpd5zgoyo8/model/model.skops, flavor: sklearn). Fall back to return ['scikit-learn==1.9.1', 'skops==0.16.0']. Set logging level to DEBUG to see the full traceback.
+[2026-10-18 21:20:22,526] {subprocess.py:93} INFO - Registered model 'bike-demand' already exists. Creating a new version of this model...
+[2026-10-18T21:20:22.526+0000] {subprocess.py:93} INFO - Registered model 'bike-demand' already exists. Creating a new version of this model...
+[2026-10-18 21:20:23,834] {subprocess.py:93} INFO - Created version '3' of model 'bike-demand'.
+[2026-10-18T21:20:23.834+0000] {subprocess.py:93} INFO - Created version '3' of model 'bike-demand'.
+[2026-10-18 21:20:34,945] {subprocess.py:93} INFO - 2026-10-18 21:20:34,898 INFO    mlplatform  summary written to /opt/airflow/artifacts/last_training.json (mlflow run 258a3f9fb10a47fea5becc0fcb6ed164)
+[2026-10-18T21:20:34.945+0000] {subprocess.py:93} INFO - 2026-10-18 21:20:34,898 INFO    mlplatform  summary written to /opt/airflow/artifacts/last_training.json (mlflow run 258a3f9fb10a47fea5becc0fcb6ed164)
+[2026-10-18 21:20:35,069] {subprocess.py:93} INFO - {
+[2026-10-18T21:20:35.069+0000] {subprocess.py:93} INFO - {
+[2026-10-18 21:20:35,070] {subprocess.py:93} INFO -   "promote": false,
+[2026-10-18T21:20:35.070+0000] {subprocess.py:93} INFO -   "promote": false,
+[2026-10-18 21:20:35,078] {subprocess.py:93} INFO -   "reason": "challenger MAE 95.48 is not 2% better than champion 95.48 (needed <= 93.57)",
+[2026-10-18T21:20:35.078+0000] {subprocess.py:93} INFO -   "reason": "challenger MAE 95.48 is not 2% better than champion 95.48 (needed <= 93.57)",
+[2026-10-18 21:20:35,080] {subprocess.py:93} INFO -   "challenger": {
+[2026-10-18T21:20:35.080+0000] {subprocess.py:93} INFO -   "challenger": {
+[2026-10-18 21:20:35,087] {subprocess.py:93} INFO -     "mae": 95.47940870212592,
+[2026-10-18T21:20:35.087+0000] {subprocess.py:93} INFO -     "mae": 95.47940870212592,
+[2026-10-18 21:20:35,089] {subprocess.py:93} INFO -     "rmse": 135.49364051906846,
+[2026-10-18T21:20:35.089+0000] {subprocess.py:93} INFO -     "rmse": 135.49364051906846,
+[2026-10-18 21:20:35,090] {subprocess.py:93} INFO -     "r2": 0.6223578632652773,
+[2026-10-18T21:20:35.090+0000] {subprocess.py:93} INFO -     "r2": 0.6223578632652773,
+[2026-10-18 21:20:35,094] {subprocess.py:93} INFO -     "n_rows": 3476
+[2026-10-18T21:20:35.094+0000] {subprocess.py:93} INFO -     "n_rows": 3476
+[2026-10-18 21:20:35,095] {subprocess.py:93} INFO -   },
+[2026-10-18T21:20:35.095+0000] {subprocess.py:93} INFO -   },
+[2026-10-18 21:20:35,095] {subprocess.py:93} INFO -   "baseline_mae": 174.98460136882977,
+[2026-10-18T21:20:35.095+0000] {subprocess.py:93} INFO -   "baseline_mae": 174.98460136882977,
+[2026-10-18 21:20:35,098] {subprocess.py:93} INFO -   "champion_mae": 95.47940870212592
+[2026-10-18T21:20:35.098+0000] {subprocess.py:93} INFO -   "champion_mae": 95.47940870212592
+[2026-10-18 21:20:35,099] {subprocess.py:93} INFO - }
+[2026-10-18T21:20:35.099+0000] {subprocess.py:93} INFO - }
+[2026-10-18 21:26:18,395] {subprocess.py:97} INFO - Command exited with return code 0
+[2026-10-18T21:26:18.395+0000] {subprocess.py:97} INFO - Command exited with return code 0
+[2026-10-18T21:26:27.681+0000] {taskinstance.py:340} INFO - ::group::Post task execution logs
+[2026-10-18T21:26:27.841+0000] {taskinstance.py:352} INFO - Marking task as SUCCESS. dag_id=demand_train, task_id=train_and_gate, run_id=manual__2026-10-17T00:00:00+00:00, execution_date=20261017T000000, start_date=, end_date=20261018T212627
+[2026-10-18T21:26:28.861+0000] {dag.py:4410} INFO - [DAG TEST] end task task_id=train_and_gate map_index=-1
+[2026-10-18T21:26:33.048+0000] {dag.py:4396} INFO - [DAG TEST] starting task_id=reload_service map_index=-1
+[2026-10-18T21:26:33.156+0000] {dag.py:4399} INFO - [DAG TEST] running task <TaskInstance: demand_train.reload_service manual__2026-10-17T00:00:00+00:00 [scheduled]>
+[2026-10-18 21:26:42,325] {taskinstance.py:3131} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='mzquadri' AIRFLOW_CTX_DAG_ID='demand_train' AIRFLOW_CTX_TASK_ID='reload_service' AIRFLOW_CTX_EXECUTION_DATE='2026-10-17T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-10-17T00:00:00+00:00'
+[2026-10-18T21:26:42.325+0000] {taskinstance.py:3131} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='mzquadri' AIRFLOW_CTX_DAG_ID='demand_train' AIRFLOW_CTX_TASK_ID='reload_service' AIRFLOW_CTX_EXECUTION_DATE='2026-10-17T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-10-17T00:00:00+00:00'
+[2026-10-18T21:26:42.407+0000] {taskinstance.py:731} INFO - ::endgroup::
+[2026-10-18 21:26:42,551] {subprocess.py:63} INFO - Tmp dir root location: /tmp
+[2026-10-18T21:26:42.551+0000] {subprocess.py:63} INFO - Tmp dir root location: /tmp
+[2026-10-18 21:26:42,714] {subprocess.py:75} INFO - Running command: ['/usr/bin/bash', '-c', 'curl -fsS -X POST "${SERVICE_URL:-http://service:8000}/reload" || echo \'service unreachable, it will pick the model up on next start\'']
+[2026-10-18T21:26:42.714+0000] {subprocess.py:75} INFO - Running command: ['/usr/bin/bash', '-c', 'curl -fsS -X POST "${SERVICE_URL:-http://service:8000}/reload" || echo \'service unreachable, it will pick the model up on next start\'']
+[2026-10-18 21:26:44,788] {subprocess.py:86} INFO - Output:
+[2026-10-18T21:26:44.788+0000] {subprocess.py:86} INFO - Output:
+[2026-10-18 21:26:53,449] {subprocess.py:93} INFO - curl: (6) Could not resolve host: service
+[2026-10-18T21:26:53.449+0000] {subprocess.py:93} INFO - curl: (6) Could not resolve host: service
+[2026-10-18 21:26:55,689] {subprocess.py:93} INFO - service unreachable, it will pick the model up on next start
+[2026-10-18T21:26:55.689+0000] {subprocess.py:93} INFO - service unreachable, it will pick the model up on next start
+[2026-10-18 21:26:55,972] {subprocess.py:97} INFO - Command exited with return code 0
+[2026-10-18T21:26:55.972+0000] {subprocess.py:97} INFO - Command exited with return code 0
+[2026-10-18T21:27:24.090+0000] {taskinstance.py:340} INFO - ::group::Post task execution logs
+[2026-10-18T21:27:24.247+0000] {taskinstance.py:352} INFO - Marking task as SUCCESS. dag_id=demand_train, task_id=reload_service, run_id=manual__2026-10-17T00:00:00+00:00, execution_date=20261017T000000, start_date=, end_date=20261018T212724
+[2026-10-18T21:27:24.628+0000] {dag.py:4410} INFO - [DAG TEST] end task task_id=reload_service map_index=-1
+[2026-10-18T21:27:24.739+0000] {dagrun.py:854} INFO - Marking run <DagRun demand_train @ 2026-10-17 00:00:00+00:00: manual__2026-10-17T00:00:00+00:00, state:running, queued_at: None. externally triggered: False> successful
+[2026-10-18T21:27:24.804+0000] {dagrun.py:905} INFO - DagRun Finished: dag_id=demand_train, execution_date=2026-10-17 00:00:00+00:00, run_id=manual__2026-10-17T00:00:00+00:00, run_start_date=2026-10-17 00:00:00+00:00, run_end_date=2026-10-18 21:27:24.797223+00:00, run_duration=163644.797223, state=success, external_trigger=False, run_type=manual, data_interval_start=2026-10-17 00:00:00+00:00, data_interval_end=2026-10-17 00:00:00+00:00, dag_hash=None
+EXIT=0

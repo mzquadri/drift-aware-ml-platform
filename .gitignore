@@ -24,3 +24,10 @@ htmlcov/
 
 .env
 .DS_Store
+
+# Python 3.11 venv, used for the Airflow extra (Airflow 2.10 does not support 3.13)
+.venv311/
+
+# Local build and run logs
+.build-*.log
+.af-*.log
