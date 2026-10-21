@@ -199,7 +199,13 @@ def _append_log(frame: pd.DataFrame, predictions: list[float]) -> None:
     try:
         record = frame.copy()
         record["prediction"] = predictions
-        record["logged_at"] = pd.Timestamp.utcnow()
+        # Timestamp.now(tz="UTC"), not Timestamp.utcnow(): pandas deprecates the
+        # latter and will remove it. The two are interchangeable here, which
+        # matters because this column is appended to an existing parquet file.
+        # Both produce datetime64[us, UTC], and a concat across the two forms
+        # keeps that dtype rather than falling back to object, so a log written
+        # by an older build still reads and still appends.
+        record["logged_at"] = pd.Timestamp.now(tz="UTC")
         path.parent.mkdir(parents=True, exist_ok=True)
         if path.exists():
             record = pd.concat([pd.read_parquet(path), record], ignore_index=True)

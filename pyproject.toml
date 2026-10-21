@@ -69,6 +69,17 @@ where = ["src"]
 testpaths = ["tests"]
 addopts = "-q --strict-markers"
 markers = ["network: needs the UCI download, skipped by default in CI"]
+# Warnings raised from this project's own modules are errors; warnings from
+# dependencies are not. Without this a deprecation in src/ passes silently,
+# which is how pandas' Timestamp.utcnow removal notice survived here unseen.
+# The module field is matched against the module the warning is attributed to,
+# so a third-party DeprecationWarning triggered inside mlplatform still fails,
+# which is the case worth catching.
+filterwarnings = [
+    "default",
+    "error::DeprecationWarning:mlplatform.*",
+    "error::FutureWarning:mlplatform.*",
+]
 
 [tool.ruff]
 line-length = 100
